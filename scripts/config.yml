@@ -1,0 +1,137 @@
+# PROJECT EXTERNAL VALIDATION REFERENCE: 
+# This data for validation are from:
+# https://www.nature.com/articles/s43856-025-01224-8
+
+# ==========================================
+# 1. CORE ANALYSIS SETTINGS
+# ==========================================
+# Type of ML task: 
+# - 'binary' (e.g., Yes vs No)
+# - 'multiclass' (e.g., Stage I vs II vs III)
+# - 'survival' (Time-to-event analysis)
+ANALYSIS_TYPE: 'binary'                 
+
+# Machine Learning algorithm to use for classification
+# TODO implementation of 'lgbm',' 'random_forest', 'svm', 'stacking' 
+MODEL_TYPE: 'xgboost'                   
+
+# Specific model implementation for survival data
+# TODO 'xgboost_workaround', 'random_survival_forest', 'cox_ph' 
+SURVIVAL_MODEL: 'xgboost_workaround'    
+
+# Strategy for handling imbalanced datasets (e.g., 90% healthy, 10% sick)
+# Options: None, 'class_weight' (penalize errors), or 'smote' (oversampling)
+HANDLE_IMBALANCE: None                  
+
+# Whether to reduce the number of features before training
+FEATURE_SELECTION: True
+
+# ==========================================
+# 2. TARGET (LABEL) DEFINITION
+# ==========================================
+# The outcome variable we are trying to predict
+TARGET_COLUMN: 'Label'       
+
+# The specific value in TARGET_COLUMN designated as the 'positive' case
+POSITIVE_CLASS: 1        
+
+# List of specific categories to include (empty list means use all available)
+CLASS2KEEP: []                 
+
+# If True: merges all non-positive classes into a single '0' class for binary tasks
+BIN_MERGE: False                    
+
+# ==========================================
+# 3. DATA MODALITY SETTINGS
+# ==========================================
+# Unique keys for patient tracking and genomic sample matching
+CLINICAL_ID: 'ID'
+GENOMIC_ID: 'gen_record_id'
+
+# ==========================================
+# 4. EXPERIMENTAL PIPELINES
+# ==========================================
+# Defines the specific 'runs' the script will execute.
+# Each entry defines a unique combination of data sources (modalities).
+
+PIPELINES:
+  - name: Clinical_Model
+    modalities:
+      - PT
+    feature_selection: True
+  - name: Radiomic_Model
+    modalities:
+      - RAD
+    feature_selection: True
+  - name: Combined_Model
+    modalities:
+      - PT
+      - RAD
+    feature_selection: True
+
+# ==========================================
+# 5. VALIDATION & REPRODUCIBILITY
+# ==========================================
+# Number of cross-validation splits
+CROSS_VALIDATION_FOLDS: 10
+
+# Ensures results are consistent across runs by locking the random number generator
+RANDOM_STATE: 0
+
+# Missing data management: If >50% data is missing, create a 'flag' for that column
+MISSING_THRESHOLD: 0.50        
+
+# ==========================================
+# 6. EXTERNAL VALIDATION
+# ==========================================
+# Data for testing the final model on entirely separate cohorts
+EXTERNAL_VALIDATION:
+  - name: "external1"
+    path: "./data/dataset_Ouyang/external1.tsv"
+    label_col: "Label"
+  - name: "external2"
+    path: "./data/dataset_Ouyang/external2.tsv"
+    label_col: "Label"
+
+# ==========================================
+# 7. MODEL TUNING & SELECTION
+# ==========================================
+# Number of trials for Bayesian optimization of hyperparameters
+BAYES_SEARCH_N_ITER: 50         
+
+# Logic used to rank feature importance (defaulting to the XGBoost internal ranker)
+FEATURE_SELECTION_METHOD: 'xgboost'
+
+
+# ==========================================
+# 8. GLOBAL SETTINGS
+# ==========================================
+EXPLORING_MISSING: False # Enable exploration mode for feature selection analysis and missing value handling plotting all folds details.
+EXP_DETAILS: False
+
+SURVIVAL_CUTOFF: 'best' # Options 'best', 'median'. Defines how to stratify patients for survival plots.
+
+N_TOP_FEATURES: 20 # Number of top features to display in plots.
+
+RUN_DECISION_PLOTS: False
+
+# ==========================================
+# 8. FILES
+# ==========================================
+# Clinical path
+CLINICAL_DATA_DIR: './data/dataset_Ouyang'
+# Clinical file prefixes
+CLINICAL_FILES:
+- pt
+- rad
+
+# MAF file, if any
+MUTATION_FILE_PATH: ''
+# Output folder
+
+BASE_DIR: './results_Ouyang'
+# Add suffix to folder results
+
+ADD_SUFF: ''
+
+FEATURES_TO_DROP: [] 
