@@ -9,18 +9,19 @@ from sklearn.metrics import auc
 from lifelines.utils import concordance_index
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
-import lightgbm as lgb
-from imblearn.over_sampling import SMOTE
 from itertools import cycle
 import shap
 from collections import Counter
 from sklearn.utils.class_weight import compute_sample_weight
 from scipy import stats
+from sklearn.base import clone
 
+from scripts.lib.clinical_metrics import evaluate_clinical_utility
 from scripts.lib.savePlots import save_plot
 from scripts.lib.shap import explain_with_shap
+
+from sklearn.calibration import CalibratedClassifierCV
 
 import yaml
 try:
@@ -32,6 +33,60 @@ except FileNotFoundError:
 from scripts.lib.paths import RESULTS_DIR
 RESULTS_DIR = Path(RESULTS_DIR)
 
+
+def plot_feature_stability(stats_df, selected_features, modality_name, explore_dir):
+    """
+    Creates a scatter plot of Mean SHAP Importance vs Stability Score,
+    highlighting the features that were officially selected.
+    """
+    # Create a working copy to avoid altering your main dataframe
+    plot_df = stats_df.copy()
+    
+    # Tag features as Selected or Discarded for coloring
+    plot_df['Status'] = 'Discarded'
+    if selected_features:
+        plot_df.loc[selected_features, 'Status'] = 'Selected'
+        
+    plt.figure(figsize=(10, 8))
+    
+    # Generate the scatter plot
+    sns.scatterplot(
+        data=plot_df,
+        x='mean_importance',
+        y='stability_score',
+        hue='Status',
+        palette={'Selected': '#2ca02c', 'Discarded': '#7f7f7f'}, # Green for selected, gray for discarded
+        alpha=0.7,
+        s=80 # Marker size
+    )
+    
+    # Label the top 10 most important AND stable features so you know exactly what they are
+    top_features = plot_df[plot_df['Status'] == 'Selected'].sort_values(
+        by=['mean_importance', 'stability_score'], ascending=False
+    ).head(10)
+    
+    for feature in top_features.index:
+        plt.text(
+            plot_df.loc[feature, 'mean_importance'],
+            plot_df.loc[feature, 'stability_score'] + (plot_df['stability_score'].max() * 0.02), # Slight vertical offset
+            feature,
+            fontsize=9,
+            horizontalalignment='center'
+        )
+
+    plt.title(f'Feature Stability vs. Importance - {modality_name}')
+    plt.xlabel('Mean SHAP Importance (Across All Folds)')
+    plt.ylabel('Stability Score (Mean / Std)')
+    
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    
+    # Save the plot
+    save_path = explore_dir / f'{modality_name}_stability_scatter.png'
+    plt.savefig(save_path, dpi=300)
+    plt.close()
+
+
 def select_stable_features(X, y, modalities_to_use, modality_features, best_params, num_classes, analysis_type, random_state, pipeline_name="default", outer_fold=None):
     """
     Performs stable feature selection using 10-fold CV for each modality,
@@ -39,8 +94,7 @@ def select_stable_features(X, y, modalities_to_use, modality_features, best_para
     """
     print("--- Starting Stable Feature Selection (10-fold CV per modality) ---")
     
-    N_SPLITS = 3 # 10
-
+    N_SPLITS = config['CROSS_VALIDATION_FOLDS']
 
     all_stable_features = []
     
@@ -67,18 +121,18 @@ def select_stable_features(X, y, modalities_to_use, modality_features, best_para
         elif isinstance(y, pd.DataFrame):
             y_stratify = y.iloc[:, 0]
 
-        stable_feature_collector = []
         feature_importance_collector = [] # For exploration mode
         
         # Setup directory for this modality
         explore_dir = None
-        results_exploration = RESULTS_DIR / 'exploration'
+        pipe_crossval_dir = RESULTS_DIR / 'cross_validation'
         folder_suffix = f"OuterFold_{outer_fold}" if outer_fold is not None else "Final_Model"
-        explore_dir = results_exploration / pipeline_name / folder_suffix / modality
+        explore_dir = pipe_crossval_dir / pipeline_name / folder_suffix / modality
         explore_dir.mkdir(parents=True, exist_ok=True)
 
         X_modality = X_modality[X_modality.isna().sum(axis=1)<X_modality.shape[1]*0.90]
         y_stratify = y_stratify.loc[X_modality.index]
+
         for fold, (train_idx, val_idx) in enumerate(stability_cv.split(X_modality, y_stratify)):
             X_train_fold, X_val_fold = X_modality.iloc[train_idx], X_modality.iloc[val_idx]
             y_train_fold = y_stratify.iloc[train_idx]
@@ -130,16 +184,25 @@ def select_stable_features(X, y, modalities_to_use, modality_features, best_para
                 'importance': global_shap_importance
             })
             
+            # 1. TAG WITH FOLD NUMBER
+            feature_importance_df['fold'] = fold
+            
+            # 2. SAVE ALL FEATURES (Do not slice top_features yet!)
+            feature_importance_collector.append(feature_importance_df)
+
+
             # top_features = feature_importance_df[feature_importance_df['importance'] > 0]['feature'].tolist()
             feature_importance_df = feature_importance_df.sort_values('importance', ascending=False)
             
             # Select top features (positive importance, up to 50% of features)
-            top_features_df = feature_importance_df.head(min((feature_importance_df['importance'] > 0).sum(), int(len(feature_importance_df) / 2)))
-            top_features = top_features_df['feature'].tolist()
+            # top_features_df = feature_importance_df.head(max((feature_importance_df['importance'] > 0).sum(), int(len(feature_importance_df) / 2)))
+            top_features_df = feature_importance_df.head((feature_importance_df['importance'] > 0).sum())
+
+            # top_features = top_features_df['feature'].tolist()
             
-            stable_feature_collector.extend(top_features)
-            feature_importance_collector.append(top_features_df)
-            
+            # stable_feature_collector.extend(top_features)
+            # feature_importance_collector.append(top_features_df)
+
             if exp_details:
                  # 2. Save Fold-Specific Data (All features for context)
                  fold_csv_path = explore_dir / f'fold_{fold+1}_importance.csv'
@@ -147,8 +210,8 @@ def select_stable_features(X, y, modalities_to_use, modality_features, best_para
                  
                  # 3. Save Fold-Specific Plot
                  plt.figure(figsize=(10, 8))
-                 # Plot top 20 or all selected if > 20
-                 n_plot = max(20, len(top_features_df))
+                 # Plot top 20 or all selected if < 20
+                 n_plot = min(20, len(top_features_df))
                  sns.barplot(x='importance', y='feature', data=feature_importance_df.head(n_plot))
                  plt.title(f'Fold {fold+1} Feature Importance - {modality}')
                  plt.xlabel('SHAP Importance')
@@ -162,53 +225,117 @@ def select_stable_features(X, y, modalities_to_use, modality_features, best_para
         #     f for f, count in feature_stability.items() if count >= STABILITY_THRESHOLD
         # ]
         
-        # --- NEW METHOD: Threshold on Median of Mean SHAP of stable features ---
+        # # --- NEW METHOD: Threshold on Median of Mean SHAP of stable features ---
 
-        # outer_fold is None, means analysis is on ALL, final model building.
-        # All features important in more than 5 folds are selected
-        if outer_fold is None:
+        # # outer_fold is None, means analysis is on ALL, final model building.
+        # # All features important in more than 5 folds are selected
+        # if outer_fold is None:
+        #     all_fold_importance = pd.concat(feature_importance_collector)
+        #     stats = all_fold_importance.groupby('feature')['importance'].agg(['count', 'mean'])
+
+        #     selected_mask = (stats['count'] >= N_SPLITS/2-1)
+
+        #     stable_5 = stats[selected_mask]
+        #     threshold = stable_5['mean'].median()
+        #     selected_mask2 = (stats['count'] >= N_SPLITS/2-1) & (stats['mean'] > threshold)
+
+        #     # Use selected_mask to select all features in more than 5 folds.
+        #     # use selected_mask2 to use features in more than 5 folds AND above threshlod
+        #     modality_stable_features = stats[selected_mask2].index.tolist()
+            
+        #     print(f"  Found {len(modality_stable_features)} features for {modality} (Frequency >= 8)")
+        # # If some features are selected, then compute median for the features selected in all folds. then select features above this threshold for all features at least important in 8
+        # elif feature_importance_collector:
+        #     all_fold_importance = pd.concat(feature_importance_collector)
+        #     stats = all_fold_importance.groupby('feature')['importance'].agg(['count', 'mean'])
+            
+        #     # 1. Identify features stable in all folds (10/10)
+        #     # stable_10 = stats[stats['count'] == N_SPLITS]
+        #     stable_10 = stats[stats['count'] > 0]
+            
+        #     # 2. Calculate threshold (median of means of stable features)
+        #     if not stable_10.empty:
+        #         threshold = stable_10['mean'].median()
+        #         print(f"  [Selection] Threshold calculated from {len(stable_10)} stable features: {threshold:.6f}")
+        #     else:
+        #         threshold = 0
+        #         print(f"  [Selection] No features stable in {N_SPLITS} folds. Threshold set to 0.")
+            
+        #     # 3. Select features: Count >= 8 AND Mean > Threshold
+        #     selected_mask = (stats['count'] >= N_SPLITS-2) & (stats['mean'] > threshold)
+        #     modality_stable_features = stats[selected_mask].index.tolist()
+            
+        #     print(f"  Found {len(modality_stable_features)} features for {modality} (Frequency >= 8, Mean Importance > {threshold:.6f})")
+        # else:
+        #     modality_stable_features = []
+        #     print(f"  Warning: No features selected for {modality}.")
+
+        # all_stable_features.extend(modality_stable_features)
+
+        # --- NEW METHOD: Matrix-based Signal-to-Noise Ratio ---
+        if feature_importance_collector:
+            # 1. Combine all fold data
             all_fold_importance = pd.concat(feature_importance_collector)
-            stats = all_fold_importance.groupby('feature')['importance'].agg(['count', 'mean'])
-
-            selected_mask = (stats['count'] >= N_SPLITS/2-1)
-
-            stable_5 = stats[selected_mask]
-            threshold = stable_5['mean'].median()
-            selected_mask2 = (stats['count'] >= N_SPLITS/2-1) & (stats['mean'] > threshold)
-
-            # Use selected_mask to select all features in more than 5 folds.
-            # use selected_mask2 to use features in more than 5 folds AND above threshlod
-            modality_stable_features = stats[selected_mask2].index.tolist()
             
-            print(f"  Found {len(modality_stable_features)} features for {modality} (Frequency >= 8)")
-        # If some features are selected, then compute median for the features selected in all folds. then select features above this threshold for all features at least important in 8
-        elif feature_importance_collector:
-            all_fold_importance = pd.concat(feature_importance_collector)
-            stats = all_fold_importance.groupby('feature')['importance'].agg(['count', 'mean'])
+            # 2. Pivot into a Feature x Fold matrix
+            # IMPORTANT: fill_value=0.0 ensures features not important in a fold get heavily penalized
+            pivot_df = all_fold_importance.pivot_table(
+                index='feature', 
+                columns='fold', 
+                values='importance', 
+                fill_value=0.0
+            )
             
-            # 1. Identify features stable in all folds (10/10)
-            # stable_10 = stats[stats['count'] == N_SPLITS]
-            stable_10 = stats[stats['count'] > 0]
+            # 3. Calculate Per-Feature Metrics
+            stats = pd.DataFrame(index=pivot_df.index)
+            stats['mean_importance'] = pivot_df.mean(axis=1) # Mean across ALL folds
+            stats['std_importance'] = pivot_df.std(axis=1)   # Variance across ALL folds
+            stats['fold_count'] = (pivot_df > 0).sum(axis=1) # How many folds > 0
             
-            # 2. Calculate threshold (median of means of stable features)
-            if not stable_10.empty:
-                threshold = stable_10['mean'].median()
-                print(f"  [Selection] Threshold calculated from {len(stable_10)} stable features: {threshold:.6f}")
+            # 4. Calculate Stability (Mean / Std)
+            epsilon = 1e-9 # Prevent division by zero
+            stats['stability_score'] = stats['mean_importance'] / (stats['std_importance'] + epsilon)
+            
+            # 5. Define Dynamic Thresholds
+            # Look only at features that appeared in at least N_SPLITS - 2 folds to set baselines
+            min_folds = N_SPLITS - 2
+            baseline_features = stats[stats['fold_count'] >= min_folds]
+            
+            if not baseline_features.empty:
+                DIM_THRESHOLD = 20 # Clinical data is usually < 20 features
+                
+                if len(modality_cols) < DIM_THRESHOLD:
+                    threshold_mean = 0
+                    threshold_stability = 0
+                    print(f"  [Selection] Low dimensionality ({len(modality_cols)}) for {modality}. Thresholds set to 0.")
+                else:
+                    threshold_mean = baseline_features['mean_importance'].median()
+                    threshold_stability = baseline_features['stability_score'].median()
+                    print(f"  [Selection] High dimensionality for {modality}. Mean Thresh: {threshold_mean:.6f}")
+                
+                # 6. Final Selection
+                selected_mask = (
+                    (stats['fold_count'] >= min_folds) & 
+                    (stats['mean_importance'] > threshold_mean) & 
+                    (stats['stability_score'] > threshold_stability)
+                )
+                
+                modality_stable_features = stats[selected_mask].index.tolist()
+                print(f"  Found {len(modality_stable_features)} highly stable and important features for {modality}.")
+                # Plot Features Stability
+                plot_feature_stability(stats, modality_stable_features, modality, explore_dir)
             else:
-                threshold = 0
-                print(f"  [Selection] No features stable in {N_SPLITS} folds. Threshold set to 0.")
-            
-            # 3. Select features: Count >= 8 AND Mean > Threshold
-            selected_mask = (stats['count'] >= N_SPLITS-2) & (stats['mean'] > threshold)
-            modality_stable_features = stats[selected_mask].index.tolist()
-            
-            print(f"  Found {len(modality_stable_features)} features for {modality} (Frequency >= 8, Mean Importance > {threshold:.6f})")
+                modality_stable_features = []
+                print(f"  Warning: No features appeared in at least {min_folds} folds.")
+                
         else:
             modality_stable_features = []
-            print(f"  Warning: No features selected for {modality}.")
+            print(f"  Warning: No features collected for {modality}.")
 
         all_stable_features.extend(modality_stable_features)
-        
+
+        # --- END NEW METHOD: Matrix-based Signal-to-Noise Ratio ---
+
         # --- EXPLORING MODE: Global Summary ---
         if feature_importance_collector:
             # Combine all fold data (selected features only)
@@ -257,12 +384,20 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
         modalities_to_use = pipeline_config.get('modalities', [])
         feature_selection = pipeline_config.get('feature_selection', False)
         
-        results_pipeline = Path(RESULTS_DIR, 'models')
-        results_pipeline_feats = results_pipeline / 'individualFeatures'
-        results_pipeline_feats.mkdir(parents=True, exist_ok=True)
+        # Base directories
+        results_models_base = Path(RESULTS_DIR, 'models')
+        results_crossval_base = Path(RESULTS_DIR, 'cross_validation')
+        
+        # 1. Create pipeline-specific Model directories
+        pipe_models_dir = results_models_base / pipeline_name
+        pipe_models_dir.mkdir(parents=True, exist_ok=True)
+        
+        pipe_models_dir_feats = pipe_models_dir / 'individualFeatures'
+        pipe_models_dir_feats.mkdir(parents=True, exist_ok=True)
 
-        results_exploration = Path(RESULTS_DIR, 'exploration')
-        results_exploration.mkdir(parents=True, exist_ok=True)
+        # 2. Create pipeline-specific Cross-Validation directories
+        pipe_crossval_dir = results_crossval_base / pipeline_name
+        pipe_crossval_dir.mkdir(parents=True, exist_ok=True)
 
         print(f"\n\n{'='*20} RUNNING PIPELINE: {pipeline_name} {'='*20}")
         print(f"--- Active modalities: {modalities_to_use} ---")
@@ -340,24 +475,38 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
                                       enable_categorical=True, random_state=config['RANDOM_STATE'])
             model_search_spaces = {
                 'learning_rate': Real(0.001, 1.0, 'log-uniform'), 'n_estimators': Integer(50, 200),
-                'max_depth': Integer(3, 15), 'subsample': Real(0.6, 1.0, 'uniform'),
-                'colsample_bytree': Real(0.6, 1.0, 'uniform'),
+                'max_depth': Integer(2, 5), 'subsample': Real(0.6, 1.0, 'uniform'),'min_child_weight': Integer(5, 20),
+                'colsample_bytree': Real(0.6, 1.0, 'uniform'),'gamma': Real(0.1, 5.0),
             }
             cv_inner = StratifiedKFold(n_splits=config['CROSS_VALIDATION_FOLDS'], shuffle=True, random_state=config['RANDOM_STATE'])
             y_train_stratify = y_train['OS'] if analysis_type == 'survival' else (y_train.iloc[:,0] if isinstance(y_train, pd.DataFrame) else y_train)
             bayes_search = BayesSearchCV(
                 estimator=model, search_spaces=model_search_spaces, n_iter=50, cv=cv_inner,
-                n_jobs=-1, verbose=0, random_state=config['RANDOM_STATE'],
+                n_jobs=config['N_CPU'], verbose=0, random_state=config['RANDOM_STATE'],
                 scoring='roc_auc_ovr' if analysis_type == 'multiclass' else 'roc_auc'
             )
             y_train_fit = y_train
+            # OLD
+            # sample_weights = None
+            # if analysis_type == 'survival':
+            #     y_train_fit = np.where(y_train['OS'] == 1, y_train['OS_time'], -y_train['OS_time'])
+            # else: # for binary and multiclass
+            #     sample_weights = compute_sample_weight(class_weight='balanced', y=y_train_fit.tolist())
+
+            # bayes_search.fit(X_train, y_train_fit.tolist(), sample_weight=sample_weights)
+            # NEW
             sample_weights = None
             if analysis_type == 'survival':
                 y_train_fit = np.where(y_train['OS'] == 1, y_train['OS_time'], -y_train['OS_time'])
-            else: # for binary and multiclass
+            elif analysis_type == 'multiclass': 
+                # Only use sample_weights for multiclass
                 sample_weights = compute_sample_weight(class_weight='balanced', y=y_train_fit.tolist())
 
-            bayes_search.fit(X_train, y_train_fit.tolist(), sample_weight=sample_weights)
+            if analysis_type == 'binary':
+                bayes_search.fit(X_train, y_train_fit.tolist())
+            else:
+                bayes_search.fit(X_train, y_train_fit.tolist(), sample_weight=sample_weights)
+            # END NEW
             best_params = bayes_search.best_params_
             fold_best_params.append(best_params)
             print(f"  Best params found: {best_params}, Score: {bayes_search.best_score_:.4f}")
@@ -383,10 +532,20 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
             final_model_fold = xgb.XGBClassifier(objective='multi:softprob' if analysis_type == 'multiclass' else 'binary:logistic',
                                                eval_metric='mlogloss' if analysis_type == 'multiclass' else 'logloss',
                                                num_class=num_class if num_class > 1 else None, **model_params)
+            # OLD
+            # if analysis_type == 'survival':
+            #     final_model_fold = xgb.XGBRegressor(objective='survival:cox', eval_metric='cox-nloglik', **model_params)
+            # final_model_fold.fit(X_train_final, y_train_fit, sample_weight=sample_weights)
+            # NEW
             if analysis_type == 'survival':
                 final_model_fold = xgb.XGBRegressor(objective='survival:cox', eval_metric='cox-nloglik', **model_params)
-            final_model_fold.fit(X_train_final, y_train_fit, sample_weight=sample_weights)
-            
+                
+            if analysis_type == 'binary':
+                final_model_fold = CalibratedClassifierCV(final_model_fold, method='sigmoid', cv=5)
+                final_model_fold.fit(X_train_final, y_train_fit)
+            else:
+                final_model_fold.fit(X_train_final, y_train_fit, sample_weight=sample_weights)
+            # END NEW
             # --- Evaluation data collection ---
             if analysis_type == 'survival':
                 all_y_pred.extend(final_model_fold.predict(X_test_final))
@@ -404,7 +563,15 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
                     print(f"  AUC on test set {roc_auc_score(y_test_binary, y_pred_proba[:, 1]):.4f}")
 
 
-            explainer = shap.TreeExplainer(final_model_fold)
+            # explainer = shap.TreeExplainer(final_model_fold)
+            # shap_values = explainer.shap_values(X_test_final)
+
+            # --- EXTRACT BASE MODEL FOR SHAP ---
+            explainer_model = final_model_fold
+            if hasattr(final_model_fold, 'calibrated_classifiers_'):
+                explainer_model = final_model_fold.calibrated_classifiers_[0].estimator
+
+            explainer = shap.TreeExplainer(explainer_model)
             shap_values = explainer.shap_values(X_test_final)
 
             if analysis_type == 'multiclass': # multiclass
@@ -448,6 +615,16 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
                 # Global ROC with CI
                 y_pred_proba_total = all_y_pred_proba_flat[:, 1]
                 global_auc = roc_auc_score(y_true_total, y_pred_proba_total)
+
+                # Capture the threshold!
+                cv_threshold = evaluate_clinical_utility(
+                    y_true=y_true_total, 
+                    y_proba=y_pred_proba_total, 
+                    pipeline_name=pipeline_name, 
+                    dataset_name="CrossValidation", 
+                    out_dir=pipe_crossval_dir
+                )
+
                 mean_auc = np.mean(aucs)
 
                 n_bootstraps = 1000
@@ -507,7 +684,7 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
                 ax_roc.set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05], title=f"Global One-vs-Rest ROC Curves for {pipeline_name}", xlabel="False Positive Rate", ylabel="True Positive Rate")
                 ax_roc.legend(loc="lower right")
 
-            save_plot(fig_roc, f"{pipeline_name}_roc_curve_cross_validation", results_exploration)
+            save_plot(fig_roc, f"{pipeline_name}_roc_curve_cross_validation", pipe_crossval_dir)
 
             print(f"--- Step 4: Evaluating overall model performance for {pipeline_name} from CV ---")
             print("Overall Classification Report (from cross-validation):")
@@ -518,7 +695,7 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
             fig_cm, ax_cm = plt.subplots(figsize=(8, 8))
             sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
             ax_cm.set_title(f"Overall Confusion Matrix for {pipeline_name} (from CV)")
-            save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", results_exploration)
+            save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", pipe_crossval_dir)
         
 
         # --- Step 3: Build Consensus Final Model ---
@@ -584,11 +761,25 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
             if analysis_type == 'survival':
                 final_model = xgb.XGBRegressor(objective='survival:cox', eval_metric='cox-nloglik', **model_params)
 
+            # OLD
+            # sample_weights_all = None
+            # if analysis_type in ['binary', 'multiclass']:
+            #     sample_weights_all = compute_sample_weight(class_weight='balanced', y=y_fit_all)
+
+            # final_model.fit(X_final, y_fit_all, sample_weight=sample_weights_all)
+            #NEW
             sample_weights_all = None
-            if analysis_type in ['binary', 'multiclass']:
+            if analysis_type == 'multiclass':
                 sample_weights_all = compute_sample_weight(class_weight='balanced', y=y_fit_all)
 
-            final_model.fit(X_final, y_fit_all, sample_weight=sample_weights_all)
+            if analysis_type == 'binary':
+                final_model = CalibratedClassifierCV(final_model, method='sigmoid', cv=5)
+                final_model.fit(X_final, y_fit_all)
+                final_model.fit(X_final, y_fit_all)
+            else:
+                final_model.fit(X_final, y_fit_all, sample_weight=sample_weights_all)
+            # END NEW
+
             # import re
             # import os
             # prospect = pd.read_csv(os.path.join(config['CLINICAL_DATA_DIR'], f"prospect.tsv"), sep='\t')
@@ -603,11 +794,13 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
 
         print("\n--- Step 4: Final Feature Set Verification (10-fold CV on entire dataset) ---")
         from sklearn.preprocessing import label_binarize # Required for multiclass ROC
+        from sklearn.metrics import confusion_matrix # Required for metrics
+        import seaborn as sns # Required for plotting
 
         mean_v_auc = 0
         if final_model is not None and master_final_feature_list:
             X_verify = X[master_final_feature_list]
-            cv_verify = StratifiedKFold(n_splits=10, shuffle=True, random_state=config['RANDOM_STATE'])
+            cv_verify = StratifiedKFold(n_splits=config['CROSS_VALIDATION_FOLDS'], shuffle=True, random_state=config['RANDOM_STATE'])
 
             verify_metrics = []
             tprs = []
@@ -620,13 +813,10 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
             n_classes = len(unique_classes)
 
             class_tprs = {i: [] for i in range(n_classes)} 
-            tprs = [] # Still used for the macro-average
-            verify_metrics = []
-            mean_fpr = np.linspace(0, 1, 100)
-
             oof_predictions = pd.DataFrame(index=X_verify.index)
             oof_predictions['truth'] = y_verify_stratify
-            # Note: 'probability' column logic below might need adjustment for multiclass if you want to save all class probs
+            oof_predictions['predicted_label'] = np.nan
+            oof_predictions['probability'] = np.nan
             
             fig_roc, ax_roc = plt.subplots(figsize=(8, 8))
 
@@ -634,21 +824,38 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
                 X_v_train, X_v_test = X_verify.iloc[v_train_idx], X_verify.iloc[v_test_idx]
                 y_v_train, y_v_test = y.iloc[v_train_idx], y.iloc[v_test_idx]
                 
+                v_model = clone(final_model)
+
                 if analysis_type == 'survival':
-                    v_model = xgb.XGBRegressor(**final_model.get_params())
                     v_y_train_fit = np.where(y_v_train['OS'] == 1, y_v_train['OS_time'], -y_v_train['OS_time'])
                     v_model.fit(X_v_train, v_y_train_fit)
                     v_pred = v_model.predict(X_v_test)
                     verify_metrics.append(concordance_index(y_v_test['OS_time'], -v_pred, y_v_test['OS']))
                 else:
-                    v_model = xgb.XGBClassifier(**final_model.get_params())
-                    v_sample_weights = compute_sample_weight(class_weight='balanced', y=y_v_train)
-                    v_model.fit(X_v_train, y_v_train, sample_weight=v_sample_weights)
-                    v_proba = v_model.predict_proba(X_v_test)
+                    v_sample_weights = compute_sample_weight(class_weight='balanced', y=y_v_train) if analysis_type != 'binary' else None
+                    if analysis_type == 'binary':
+                        v_model.fit(X_v_train, y_v_train)
+                    else:
+                        v_model.fit(X_v_train, y_v_train, sample_weight=v_sample_weights)
+                    
+                    v_test_proba = v_model.predict_proba(X_v_test)
                     
                     if analysis_type == 'binary':
-                        fpr, tpr, _ = roc_curve(y_v_test, v_proba[:, 1])
-                        roc_auc = roc_auc_score(y_v_test, v_proba[:, 1])
+                        # 1. CALCULATE YOUDEN ON TRAINING FOLD
+                        v_train_proba = v_model.predict_proba(X_v_train)[:, 1]
+                        fpr_tr, tpr_tr, thresh_tr = roc_curve(y_v_train, v_train_proba)
+                        optimal_idx = np.argmax(tpr_tr - fpr_tr)
+                        v_thresh = thresh_tr[optimal_idx]
+
+                        # 2. APPLY TO TEST FOLD
+                        v_test_pred = (v_test_proba[:, 1] >= v_thresh).astype(int)
+                        
+                        # 3. STORE IN OOF
+                        oof_predictions.loc[X_v_test.index, 'probability'] = v_test_proba[:, 1]
+                        oof_predictions.loc[X_v_test.index, 'predicted_label'] = v_test_pred
+
+                        fpr, tpr, _ = roc_curve(y_v_test, v_test_proba[:, 1])
+                        roc_auc = roc_auc_score(y_v_test, v_test_proba[:, 1])
                         verify_metrics.append(roc_auc)
                         
                         interp_tpr = np.interp(mean_fpr, fpr, tpr)
@@ -657,74 +864,104 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
                         ax_roc.plot(fpr, tpr, lw=1, alpha=0.3, label='_nolegend_')
 
                     elif analysis_type == 'multiclass':
+                        # Fallback for Multiclass (Argmax is standard)
+                        v_test_pred = np.argmax(v_test_proba, axis=1)
+                        oof_predictions.loc[X_v_test.index, 'probability'] = np.max(v_test_proba, axis=1)
+                        oof_predictions.loc[X_v_test.index, 'predicted_label'] = v_test_pred
+                        
                         y_v_test_bin = label_binarize(y_v_test, classes=unique_classes)
-                        roc_auc = roc_auc_score(y_v_test, v_proba, multi_class='ovr', average='macro')
+                        roc_auc = roc_auc_score(y_v_test, v_test_proba, multi_class='ovr', average='macro')
                         verify_metrics.append(roc_auc)
 
                         fold_tprs = []
                         for i in range(n_classes):
-                            fpr_c, tpr_c, _ = roc_curve(y_v_test_bin[:, i], v_proba[:, i])
+                            fpr_c, tpr_c, _ = roc_curve(y_v_test_bin[:, i], v_test_proba[:, i])
                             interp_tpr = np.interp(mean_fpr, fpr_c, tpr_c)
                             interp_tpr[0] = 0.0
-                            
-                            # Store for individual class mean calculation
                             class_tprs[i].append(interp_tpr)
-                            # Store for this fold's macro-average
                             fold_tprs.append(interp_tpr)
-                        
                         tprs.append(np.mean(fold_tprs, axis=0))
             
-            # --- Update OOF Predictions for CSV ---
-            # We use the final_model trained on whole set for the "per-sample" view
-            oof_predictions['predicted_label'] = final_model.predict(X_verify)
-            # For simplicity, we save the probability of the predicted class or the first class
-            oof_predictions['probability'] = np.max(final_model.predict_proba(X_verify), axis=1)
-
             # --- 1. SAVE PER-SAMPLE PREDICTIONS ---
-            predictions_csv_path = results_pipeline / f"{pipeline_name}_sample_predictions.csv"
+            predictions_csv_path = pipe_models_dir / f"{pipeline_name}_sample_predictions.csv"
             oof_predictions.to_csv(predictions_csv_path)
-            
-            # --- 2. GENERATE AND SAVE CONFUSION MATRIX ---
-            if analysis_type != 'survival':
-                from sklearn.metrics import confusion_matrix
-                import seaborn as sns
-                valid_oof = oof_predictions.dropna(subset=['predicted_label'])
-                cm = confusion_matrix(valid_oof['truth'], valid_oof['predicted_label'])
-                fig_cm, ax_cm = plt.subplots(figsize=(8, 8))
-                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-                            xticklabels=class_names, yticklabels=class_names)
-                ax_cm.set_title(f"Confusion Matrix: {pipeline_name}\n(10-fold CV Aggregated)")
-                save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", results_pipeline)
 
-            # --- Finalize Statistics & Plotting ---
+            if analysis_type == 'binary':
+                valid_oof = oof_predictions.dropna(subset=['probability', 'truth'])
+                cv_threshold = evaluate_clinical_utility(
+                    y_true=valid_oof['truth'].astype(int), 
+                    y_proba=valid_oof['probability'], 
+                    pipeline_name=pipeline_name, 
+                    dataset_name="Final_Verification", 
+                    out_dir=pipe_models_dir
+                )
+
+            # --- 2. COMPUTE METRICS & CONFUSION MATRIX ---
+            if analysis_type != 'survival':
+                valid_oof = oof_predictions.dropna(subset=['predicted_label'])
+                y_true_clean = valid_oof['truth'].astype(int)
+                y_pred_clean = valid_oof['predicted_label'].astype(int)
+
+                cm = confusion_matrix(y_true_clean, y_pred_clean)
+                
+                # Plot Confusion Matrix
+                fig_cm, ax_cm = plt.subplots(figsize=(8, 8))
+                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
+                ax_cm.set_title(f"Confusion Matrix: {pipeline_name}\n(10-fold CV Aggregated w/ Youden Threshold)")
+                ax_cm.set_xlabel("Predicted")
+                ax_cm.set_ylabel("Actual")
+                save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", pipe_models_dir)
+
+                # Compute Statistics Table
+                if analysis_type == 'binary':
+                    tn, fp, fn, tp = cm.ravel()
+                    metrics_dict = {
+                        'Pipeline': pipeline_name,
+                        'Accuracy': (tp + tn) / (tp + tn + fp + fn),
+                        'Sensitivity (TPR)': tp / (tp + fn) if (tp + fn) > 0 else 0,
+                        'Specificity (TNR)': tn / (tn + fp) if (tn + fp) > 0 else 0
+                    }
+                    metrics_df = pd.DataFrame([metrics_dict])
+                    metrics_path = pipe_models_dir / f"{pipeline_name}_CV_Metrics.csv"
+                    metrics_df.to_csv(metrics_path, index=False)
+                    print(f"  [Saved] Clinical metrics table saved to {metrics_path}")
+            # ==========================================================
+            # --- 3. FINALIZE STATISTICS, PLOT ROC & SAVE CURVE DATA ---
+            # ==========================================================
             mean_v_auc = np.mean(verify_metrics)
             m_name = "C-Index" if analysis_type == 'survival' else "AUC"
             confidence = 0.95
             n_folds = len(verify_metrics)
-            se = stats.sem(verify_metrics)
-            h = se * stats.t.ppf((1 + confidence) / 2., n_folds-1)
+            
+            # Safely calculate standard error and bounds
+            if n_folds > 1:
+                se = stats.sem(verify_metrics)
+                h = se * stats.t.ppf((1 + confidence) / 2., n_folds-1)
+            else:
+                h = 0
             lower_v, upper_v = mean_v_auc - h, mean_v_auc + h
 
-            if analysis_type in ['binary']:
+            pipeline_curve_data = None # Initialize to prevent Reference Errors
+            
+            if analysis_type == 'binary':
                 mean_tpr = np.mean(tprs, axis=0)
                 mean_tpr[-1] = 1.0
                 
+                # THIS IS THE MISSING DICTIONARY:
                 pipeline_curve_data = {'fpr': mean_fpr, 'tpr': mean_tpr, 'auc': mean_v_auc, 'lower': lower_v, 'upper': upper_v}
                 
-                label_prefix = "Mean" if analysis_type == 'binary' else "Macro-average"
                 ax_roc.plot(mean_fpr, mean_tpr, color='b',
-                            label=f'{label_prefix} ROC (AUC = {mean_v_auc:.2f} [{lower_v:.2f}- {upper_v:.2f}])', lw=2, alpha=.8)
+                            label=f'Mean ROC (AUC = {mean_v_auc:.2f} [{lower_v:.2f}- {upper_v:.2f}])', lw=2, alpha=.8)
                 
                 ax_roc.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random classifier', alpha=.8)
                 ax_roc.set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05],
-                            title=f"Verification {n_folds}-fold ROC - {analysis_type}",
+                            title=f"Verification {n_folds}-fold ROC - {pipeline_name}",
                             xlabel="False Positive Rate", ylabel="True Positive Rate")
                 ax_roc.legend(loc="lower right")
-                save_plot(fig_roc, f"Final_{pipeline_name}_ROC", results_pipeline)
+                save_plot(fig_roc, f"Final_{pipeline_name}_ROC", pipe_models_dir)
 
-            # --- Finalize Statistics & Plotting ---
-            if analysis_type == 'multiclass':
-                # 1. Plot Individual Class Curves first (lighter lines)
+            elif analysis_type == 'multiclass':
+                # 1. Plot Individual Class Curves
                 for i in range(n_classes):
                     mean_tpr_c = np.mean(class_tprs[i], axis=0)
                     mean_tpr_c[-1] = 1.0
@@ -734,22 +971,22 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
                     ax_roc.plot(mean_fpr, mean_tpr_c, lw=1.5, alpha=0.5,
                                 label=f'ROC {c_name} (AUC = {class_auc:.2f})')
 
-                # 2. Plot the Macro-Average Curve (thick line)
+                # 2. Plot Macro-Average Curve
                 mean_tpr = np.mean(tprs, axis=0)
                 mean_tpr[-1] = 1.0
                 
+                # STORE MACRO CURVE DATA FOR COMPARISON PLOT
+                pipeline_curve_data = {'fpr': mean_fpr, 'tpr': mean_tpr, 'auc': mean_v_auc, 'lower': lower_v, 'upper': upper_v}
+
                 ax_roc.plot(mean_fpr, mean_tpr, color='navy', linestyle=':', lw=3,
                             label=f'Macro-average ROC (AUC = {mean_v_auc:.2f} [{lower_v:.2f}-{upper_v:.2f}])')
 
-                # Standard plot setup
                 ax_roc.plot([0, 1], [0, 1], 'k--', lw=2, label='Random')
                 ax_roc.set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05],
                             title=f"Multiclass 10-fold ROC - {pipeline_name}",
                             xlabel="False Positive Rate", ylabel="True Positive Rate")
                 ax_roc.legend(loc="lower right", fontsize='small')
-                
-                save_plot(fig_roc, f"Final_{pipeline_name}_Multiclass_ROC", results_pipeline)
-
+                save_plot(fig_roc, f"Final_{pipeline_name}_Multiclass_ROC", pipe_models_dir)
 
         # # --- Step 4: Final Feature Set Verification (10-fold CV on entire dataset) ---
         # print("\n--- Step 4: Final Feature Set Verification (10-fold CV on entire dataset) ---")
@@ -809,7 +1046,7 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
 
         #     # --- 1. SAVE PER-SAMPLE PREDICTIONS ---
         #     # Save the CSV showing which specific samples were predicted as 0 or 1
-        #     predictions_csv_path = results_pipeline / f"{pipeline_name}_sample_predictions.csv"
+        #     predictions_csv_path = pipe_models_dir / f"{pipeline_name}_sample_predictions.csv"
         #     oof_predictions.to_csv(predictions_csv_path)
         #     print(f"✅ Per-sample predictions saved to: {predictions_csv_path}")
             
@@ -829,7 +1066,7 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
         #         ax_cm.set_xlabel("Predicted")
         #         ax_cm.set_ylabel("Actual")
                 
-        #         save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", results_pipeline)
+        #         save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", pipe_models_dir)
 
         #     # --- Finalize Statistics & Plotting ---
         #     mean_v_auc = np.mean(verify_metrics)
@@ -868,25 +1105,33 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
         #         ax_roc.legend(loc="lower right")
                 
         #         # Use your save_plot function if available, or plt.show()
-        #         save_plot(fig_roc, f"Final_{pipeline_name}_ROC", results_pipeline)
+        #         save_plot(fig_roc, f"Final_{pipeline_name}_ROC", pipe_models_dir)
 
                 # cm = confusion_matrix(all_y_test_true, all_y_pred)
                 # fig_cm, ax_cm = plt.subplots(figsize=(8, 8))
                 # sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
                 # ax_cm.set_title(f"Overall Confusion Matrix for {pipeline_name} (from CV)")
-                # save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", results_exploration)
+                # save_plot(fig_cm, f"{pipeline_name}_confusion_matrix_cv", pipe_crossval_dir)
         
 
         all_results[pipeline_name] = {
-            'pipeline': final_model, # Storing the actual model object
+            'pipeline': final_model,
             'vmodel': v_model,
             'selected_features': master_final_feature_list,
             'best_params': consensus_params,
             'verification_auc': mean_v_auc,
-            'curve_data': pipeline_curve_data
+            'curve_data': pipeline_curve_data,
+            'optimal_threshold': cv_threshold
         }
 
-        shap_values = explain_with_shap(all_results, X, config['ANALYSIS_TYPE'], class_names, results_pipeline, mappings)
+        shap_values = explain_with_shap(
+            {pipeline_name: all_results[pipeline_name]}, 
+            X, 
+            config['ANALYSIS_TYPE'], 
+            class_names, 
+            pipe_models_dir, 
+            mappings
+        )
 
         # if analysis_type != 'survival':
         #     print(f"  ROC AUC of final model (fitted on all): {roc_auc_score(y_fit_all,final_model.predict_proba(X_final)[:,1])}")
@@ -894,7 +1139,7 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
     # --- FINAL COMPARISON PLOT ---
     if analysis_type == 'binary':
         print("\n--- Generating Final Pipeline Comparison Plot ---")
-        fig_comp, ax_comp = plt.subplots(figsize=(10, 8))
+        fig_comp, ax_comp = plt.subplots(figsize=(10, 10))
         
         # Define colors for different pipelines
         colors = cycle(['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'])
@@ -916,7 +1161,7 @@ def train_evaluate_cv(X, y, class_names, modality_features, analysis_type, model
         ax_comp.grid(alpha=0.2)
         
         # Save the comparison plot
-        save_plot(fig_comp, "Pipeline_Comparison_ROC", results_pipeline)
+        save_plot(fig_comp, "Pipeline_Comparison_ROC", results_models_base)
 
     return all_results
 

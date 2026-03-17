@@ -313,6 +313,11 @@ def explain_with_shap(pipelines, X_raw, analysis_type, class_names, out_dir, map
         # 3. Create SHAP Explainer
         # Pass background data (X_transformed) to the explainer
         # Note: Using X_transformed as background. Could also use shap.maskers.Independent
+        
+        # Add this check before TreeExplainer:
+        if hasattr(model, 'calibrated_classifiers_'):
+            model = model.calibrated_classifiers_[0].estimator
+            
         explainer = shap.TreeExplainer(model)
         
         # Get SHAP values for the (potentially different) display data

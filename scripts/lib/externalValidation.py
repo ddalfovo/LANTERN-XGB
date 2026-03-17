@@ -9,111 +9,331 @@ testing sets and generates comparative ROC visualization plots.
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+if not hasattr(np, 'int'):
+    np.int = int
+if not hasattr(np, 'float'):
+    np.float = float
+from neuroCombat import neuroCombat
 from pathlib import Path
 from sklearn.metrics import roc_auc_score, roc_curve
 from itertools import cycle
 import yaml
 import re
 import shap
+import joblib # Added to save parameters for N=1
 
-# Internal library imports for standardized plot saving and path management
 from scripts.lib.savePlots import save_plot
+from scripts.lib.clinical_metrics import evaluate_clinical_utility
 from scripts.lib.paths import *
 
-# --- CONFIGURATION & PATH SETUP ---
 config = yaml.safe_load(open("./scripts/config.yml"))
 RESULTS_DIR = Path(RESULTS_DIR)
 
 def sigmoid(x):
-    """Converts logit (log-odds) to probability."""
     return 1 / (1 + np.exp(-x))
 
+def save_clinical_metrics(y_true, y_pred, y_proba, pipeline_name, dataset_name, out_dir, suffix=""):
+    """Helper function to compute realistic metrics and plot confusion matrix."""
+    from sklearn.metrics import confusion_matrix, roc_auc_score
+    import seaborn as sns
+    
+    # Calculate confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    tn, fp, fn, tp = cm.ravel() if cm.size == 4 else (0,0,0,0)
+    
+    # Calculate Metrics
+    metrics_dict = {
+        'Dataset': dataset_name,
+        'Pipeline': f"{pipeline_name}{suffix}",
+        'Accuracy': (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0,
+        'Sensitivity (TPR)': tp / (tp + fn) if (tp + fn) > 0 else 0,
+        'Specificity (TNR)': tn / (tn + fp) if (tn + fp) > 0 else 0,
+        'PPV (Precision)': tp / (tp + fp) if (tp + fp) > 0 else 0,
+        'NPV': tn / (tn + fn) if (tn + fn) > 0 else 0,
+        'F1 Score': (2 * tp) / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0 else 0,
+        'ROC AUC': roc_auc_score(y_true, y_proba)
+    }
+    metrics_df = pd.DataFrame([metrics_dict])
+    metrics_path = out_dir / f"{pipeline_name}_{dataset_name}{suffix}_Metrics.csv"
+    metrics_df.to_csv(metrics_path, index=False)
+    
+    # Save Confusion Matrix
+    fig, ax = plt.subplots(figsize=(6, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    ax.set_title(f"Confusion Matrix: {pipeline_name}{suffix}\nDataset: {dataset_name}")
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
+    save_plot(fig, f"Confusion_Matrix_{pipeline_name}_{dataset_name}{suffix}", out_dir)
+    plt.close(fig)
 
-def run_external_validation(all_results):
-    """
-    Evaluates every trained pipeline against all external datasets defined in the config.
 
-    This function performs the following for each external dataset:
-    1. Loads the raw data and sanitizes column names.
-    2. Identifies and aligns features (handling missing columns).
-    3. Generates predictions using the stored model bundles.
-    4. Calculates AUC and plots an ROC curve comparing all pipelines.
-
-    Args:
-        all_results (dict): Dictionary of model bundles from the training phase.
-
-    Returns:
-        dict: A nested dictionary containing performance metrics (FPR, TPR, AUC) 
-              indexed by dataset and pipeline name.
-    """
+def run_external_validation(all_results, X_train=None, y_train=None, mappings=None ,modality_features=None):
     external_configs = config.get('EXTERNAL_VALIDATION', [])
     if not external_configs:
         print("No external validation sets found in config.")
         return
 
-    # To store data for the final "Combined" plot
-    # Structure: {dataset_name: {pipeline_name: {fpr, tpr, auc}}}
+    ext_base_dir = RESULTS_DIR / "external_validation"
+    ext_base_dir.mkdir(parents=True, exist_ok=True)
     validation_performance = {}
+    
+    # Extract numerical AND categorical mappings
+    categorical_mappings = mappings[0] if mappings else {}
+    numerical_mappings = mappings[1] if mappings else {}
+
+    # Define a color cycle to stay consistent across different plots
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    colors = prop_cycle.by_key()['color']
+    pipeline_colors = {name: colors[i % len(colors)] for i, name in enumerate(all_results.keys())}
 
     for ext_conf in external_configs:
         dataset_name = ext_conf['name']
+        
+        # Create a specific folder for this dataset
+        dataset_ext_dir = ext_base_dir / dataset_name
+        dataset_ext_dir.mkdir(parents=True, exist_ok=True)
+        
         print(f"\n--- Validating on Dataset: {dataset_name} ---")
         
-        # 1. Load external data and sanitize headers (matching XGBoost training names)
         ext_df = pd.read_csv(ext_conf['path'], sep='\t')
         ext_df.columns = [re.sub(r'[\[\]<>()\s,]', '_', col) for col in ext_df.columns]
-        
         y_true = ext_df[ext_conf['label_col']]
         validation_performance[dataset_name] = {}
 
-        # Initialize plot for this specific dataset
         fig, ax = plt.subplots(figsize=(8, 8))
         
         for pipeline_name, bundle in all_results.items():
-            model = bundle['pipeline']
-            features = bundle['selected_features']
+            color = pipeline_colors[pipeline_name]
+
+            model = bundle['model']
+            features = bundle['features']
             
-            # --- CRITICAL: FEATURE ALIGNMENT ---
-            # Models fail if columns are missing or in the wrong order.
-            X_ext = ext_df.copy()
+            # --- NEW: Identify harmonized features for THIS specific pipeline ---
+            pipe_conf = next((p for p in config.get('PIPELINES', []) if p['name'] == pipeline_name), {})
+            harmonization_rule = pipe_conf.get('harmonization', [])
+            
+            harmonized_feature_set = set()
+            if isinstance(harmonization_rule, list) and modality_features:
+                for mod in harmonization_rule:
+                    if mod.lower() in modality_features:
+                        harmonized_feature_set.update(modality_features[mod.lower()])
+
+            # Create a raw copy for ComBat later
+            X_ext_raw = ext_df.copy()
             for col in features:
-                if col not in X_ext.columns:
-                    # Fill missing features required by the model with 0
-                    X_ext[col] = 0 
+                if col not in X_ext_raw.columns:
+                    X_ext_raw[col] = np.nan
+            X_ext_aligned_raw = X_ext_raw[features].copy()
             
-            # Force the external dataframe to have the exact column order as training
-            X_ext_aligned = X_ext[features]
+            # Create aligned scaled copy for baseline model
+            X_ext_aligned = X_ext_aligned_raw.copy()
+
+            # try:
+            #     booster = model.get_booster()
+            #     f_types = booster.feature_types if hasattr(booster, 'feature_types') else None
+            # except Exception:
+            #     f_types = None
+
+            for col in features:
+                # 1. Use the mappings from training to know exactly what is categorical!
+                is_cat = col in categorical_mappings
+
+                if is_cat:
+                    # 2. Safely cast to category AND enforce the same categories as training
+                    X_ext_aligned[col] = X_ext_aligned[col].astype('category')
+                    X_ext_aligned[col] = X_ext_aligned[col].cat.set_categories(categorical_mappings[col])
+                    
+                    X_ext_aligned_raw[col] = X_ext_aligned_raw[col].astype('category')
+                    X_ext_aligned_raw[col] = X_ext_aligned_raw[col].cat.set_categories(categorical_mappings[col])
+                else:
+                    X_ext_aligned[col] = pd.to_numeric(X_ext_aligned[col], errors='coerce')
+                    X_ext_aligned_raw[col] = pd.to_numeric(X_ext_aligned_raw[col], errors='coerce')
+                    
+                    if col in numerical_mappings and col in harmonized_feature_set:
+                        train_mean = numerical_mappings[col]['mean']
+                        train_std = numerical_mappings[col]['std']
+                        if train_std > 0:
+                            X_ext_aligned[col] = (X_ext_aligned[col] - train_mean) / train_std
             
-            # 2. Prediction and Metric Calculation
-            # Get probability scores for the positive class (column 1)
+            # 1. BASELINE PREDICTION & CI
             y_proba = model.predict_proba(X_ext_aligned)[:, 1]
+            
+            # --- YOUDEN INDEX & PREDICTION ---
+            youden_threshold = 0.5
+            if X_train is not None and y_train is not None:
+                X_train_aligned = X_train[features].copy()
+                y_train_proba = model.predict_proba(X_train_aligned)[:, 1]
+                y_train_true = y_train.values if isinstance(y_train, pd.Series) else y_train.iloc[:, 0].values
+                
+                fpr_train, tpr_train, thresholds_train = roc_curve(y_train_true, y_train_proba)
+                youden_index = tpr_train - fpr_train
+                youden_threshold = thresholds_train[np.argmax(youden_index)]
+            
+            y_pred_pseudo = (y_proba >= youden_threshold).astype(int)
+            
+            # Calculate Baseline Metrics & CM
+            save_clinical_metrics(y_true, y_pred_pseudo, y_proba, pipeline_name, dataset_name, dataset_ext_dir, suffix="_Baseline")
+
             auc_val = roc_auc_score(y_true, y_proba)
             fpr, tpr, _ = roc_curve(y_true, y_proba)
+
+            evaluate_clinical_utility(
+                y_true=y_true, y_proba=y_proba, pipeline_name=pipeline_name, 
+                dataset_name=dataset_name, out_dir=dataset_ext_dir
+            )
+
+            validation_performance[dataset_name][pipeline_name] = {'fpr': fpr, 'tpr': tpr, 'auc': auc_val}
             
-            # Store results for the multi-dataset summary plot
-            validation_performance[dataset_name][pipeline_name] = {
-                'fpr': fpr, 'tpr': tpr, 'auc': auc_val
-            }
-            
+            # Bootstrap for CI
             n_bootstraps = 1000
-            bootstrapped_aucs = [roc_auc_score(y_true[indices], y_proba[indices])
-                                     for _ in range(n_bootstraps)
-                                     if len(np.unique(y_true[(indices := np.random.RandomState(config['RANDOM_STATE']+_).choice(len(y_true), len(y_true), replace=True))])) > 1]
-            lower_global, upper_global = np.percentile(bootstrapped_aucs, [2.5, 97.5])
+            rng = np.random.RandomState(config['RANDOM_STATE'])
+            bootstrapped_aucs = []
+            for i in range(n_bootstraps):
+                indices = rng.choice(len(y_true), len(y_true), replace=True)
+                if len(np.unique(y_true.iloc[indices])) < 2:
+                    continue
+                bootstrapped_aucs.append(roc_auc_score(y_true.iloc[indices], y_proba[indices]))
+            
+            lower, upper = np.percentile(bootstrapped_aucs, [2.5, 97.5])
+            
+            ax.plot(fpr, tpr, color=color, linestyle='--', alpha=0.7,
+                    label=f"{pipeline_name} Baseline (AUC: {auc_val:.2f} [{lower:.2f}-{upper:.2f}])")
+            print(f"  Pipeline {pipeline_name} (Baseline) -> AUC: {auc_val:.4f}")
 
-            # Add this pipeline's curve to the plot
-            ax.plot(fpr, tpr, label=f"{pipeline_name} (AUC = {auc_val:.2f}) [95% CI: {lower_global:.2f} - {upper_global:.2f}]")
-            print(f"  Pipeline {pipeline_name} -> AUC: {auc_val:.4f}")
+            # 2. HARMONIZATION (ComBat) PREDICTION & CI
+            if X_train is not None and y_train is not None and mappings is not None:
+                try:
+                    import warnings
+                    print(f"  --- Running ComBat Harmonization for {dataset_name} ---")
+                    
+                    # 1. Identify continuous harmonized features (Radiomics only)
+                    harmonized_continuous_features = [
+                        col for col in features 
+                        if X_ext_aligned_raw[col].dtype.name != 'category' and col in harmonized_feature_set
+                    ]
+                    
+                    # 2. Reconstruct RAW Training Data FOR HARMONIZED FEATURES ONLY
+                    X_train_raw = X_train.copy()
+                    valid_cont_features = []
+                    for col in harmonized_continuous_features:
+                        if col in numerical_mappings and col in X_train_raw.columns:
+                            train_mean = numerical_mappings[col]['mean']
+                            train_std = numerical_mappings[col]['std']
+                            # Reverse the Z-score for training data
+                            X_train_raw[col] = (X_train_raw[col] * train_std) + train_mean
+                            
+                            if X_train_raw[col].var() > 1e-6 and X_ext_aligned_raw[col].var() > 1e-6:
+                                valid_cont_features.append(col)
+                    
+                    if valid_cont_features:
+                        X_train_cont_raw = X_train_raw[valid_cont_features].copy()
+                        X_ext_cont_raw = X_ext_aligned_raw[valid_cont_features].copy()
+                        
+                        # 3. Combine raw data
+                        combined_data = pd.concat([X_train_cont_raw, X_ext_cont_raw], axis=0).T
+                        combined_data = combined_data.fillna(combined_data.mean(axis=1))
+                        
+                        y_train_labels = y_train.values if isinstance(y_train, pd.Series) else y_train.iloc[:, 0].values
+                        y_ext_labels = y_true.values
+                        
+                        batch_labels = [0] * len(X_train_cont_raw) + [1] * len(X_ext_cont_raw)
+                        # Use True labels for Training, and True for External
+                        # disease_labels = list(y_train_labels) + list(y_ext_labels)
+                        # Use True labels for Training, and Pseudo-Labels for External
+                        disease_labels = list(y_train_true) + list(y_pred_pseudo)
+                        covars = pd.DataFrame({'batch': batch_labels, 'disease': disease_labels})
+                        
+                        # 4. Run ComBat on the RAW data
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            combat_res = neuroCombat(
+                                dat=combined_data,
+                                covars=covars,
+                                batch_col='batch', 
+                                # categorical_cols=['disease'],
+                                ref_batch=0
+                            )
+                        
+                        # Extract the harmonized RAW external data
+                        harmonized_combined = combat_res['data'].T
+                        X_ext_harmonized_cont_raw = harmonized_combined[len(X_train_cont_raw):] 
+                        
+                        # 5. Apply the TRAINING Z-Score to the Harmonized Data
+                        # We start with the aligned dataset which safely retains the RAW clinical variables untouched
+                        X_ext_harmonized = X_ext_aligned.copy() 
+                        
+                        for i, col in enumerate(valid_cont_features):
+                            harm_raw_vals = X_ext_harmonized_cont_raw[:, i]
+                            train_mean = numerical_mappings[col]['mean']
+                            train_std = numerical_mappings[col]['std']
+                            
+                            if X_ext_harmonized[col].dtype != 'float64':
+                                X_ext_harmonized[col] = X_ext_harmonized[col].astype(float)
+                            # Standardize using training statistics
+                            if train_std > 0:
+                                X_ext_harmonized.loc[:, col] = (harm_raw_vals - train_mean) / train_std
+                            else:
+                                X_ext_harmonized.loc[:, col] = harm_raw_vals
 
-        # --- PLOT FORMATTING ---
+                        # 6. Re-Predict using properly scaled harmonized data
+                        y_proba_harm = model.predict_proba(X_ext_harmonized)[:, 1]
+                        
+                        # Apply the EXACT SAME Youden Threshold from training!
+                        y_pred_harm = (y_proba_harm >= youden_threshold).astype(int)
+                        
+                        # Calculate Harmonized Metrics & CM
+                        save_clinical_metrics(y_true, y_pred_harm, y_proba_harm, pipeline_name, dataset_name, dataset_ext_dir, suffix="_Harmonized")
+
+                        auc_harm = roc_auc_score(y_true, y_proba_harm)
+                        fpr_harm, tpr_harm, _ = roc_curve(y_true, y_proba_harm)
+                        
+                        # Bootstrap for Harmonized CI
+                        boot_harm = []
+                        for i in range(n_bootstraps):
+                            indices = rng.choice(len(y_true), len(y_true), replace=True)
+                            if len(np.unique(y_true.iloc[indices])) < 2:
+                                continue
+                            boot_harm.append(roc_auc_score(y_true.iloc[indices], y_proba_harm[indices]))
+                        
+                        l_h, u_h = np.percentile(boot_harm, [2.5, 97.5])
+
+                        ax.plot(fpr_harm, tpr_harm, color=color, linestyle='-', linewidth=2,
+                                label=f"{pipeline_name} + ComBat (AUC: {auc_harm:.2f} [{l_h:.2f}-{u_h:.2f}])")
+                        
+                        print(f"  Pipeline {pipeline_name} (ComBat Harmonized) -> AUC: {auc_harm:.4f}")
+
+                        # Generate new Calibration and DCA plots specifically for the Harmonized data!
+                        evaluate_clinical_utility(
+                            y_true=y_true, 
+                            y_proba=y_proba_harm, 
+                            pipeline_name=f"{pipeline_name}_Harmonized", 
+                            dataset_name=dataset_name, 
+                            out_dir=dataset_ext_dir,
+                            precalculated_threshold=youden_threshold
+                        )
+                        # --- UPDATE 4: SAVING ESTIMATES FOR N=1 FUTURE SAMPLES ---
+                        # neuroCombat outputs an 'estimates' dict. Save this mapping for later!
+                        deployment_mapping = {
+                            'combat_estimates': combat_res['estimates'],
+                            'training_mean_std': numerical_mappings,
+                            'features': valid_cont_features
+                        }
+                        joblib.dump(deployment_mapping, dataset_ext_dir / f"{dataset_name}_harmonization_mapping.joblib")
+                        print(f"  [Saved] Harmonization mapping for future N=1 samples from {dataset_name}.")
+
+                    else:
+                        print("  [Warning] No valid continuous features found for ComBat.")
+                except Exception as e:
+                    print(f"  [Error] ComBat harmonization failed: {e}")
+            # ==========================================================
+
         ax.plot([0, 1], [0, 1], 'k--', label="Random Chance")
         ax.set_title(f"External Validation: {dataset_name}")
         ax.set_xlabel("False Positive Rate")
         ax.set_ylabel("True Positive Rate")
         ax.legend(loc="lower right")
         
-        # Export the visual result
-        save_plot(fig, f"Ext_Val_{dataset_name}_Comparison", RESULTS_DIR / "external_validation")
+        save_plot(fig, f"Ext_Val_{dataset_name}_Comparison", dataset_ext_dir)
         plt.show()
 
     return validation_performance
@@ -152,17 +372,17 @@ def run_external_decision_plots(all_results, validation_performance):
     
     for ext_conf in external_configs:
         dataset_name = ext_conf['name']
-        # Load and clean data (re-using your existing logic)
         ext_df = pd.read_csv(ext_conf['path'], sep='\t')
-        # ext_df.columns = [re.sub(r'[\[\]<>()\s,]', '_', col) for col in ext_df.columns]
         
-        # Create output directory for this specific dataset's samples
-        sample_dir = RESULTS_DIR / "external_validation" / f"samples_{dataset_name}"
+        # Create dataset-specific subfolder for samples
+        dataset_ext_dir = RESULTS_DIR / "external_validation" / dataset_name
+        sample_dir = dataset_ext_dir / "samples"
         sample_dir.mkdir(parents=True, exist_ok=True)
 
-    for pipeline_name, bundle in all_results.items():
-        pipeline = bundle['pipeline']
-        selected_features = bundle['selected_features']
+        # BUG FIX: Indent the pipeline loop so it runs for EVERY dataset
+        for pipeline_name, bundle in all_results.items():
+            pipeline = bundle['pipeline']
+            selected_features = bundle['selected_features']
         
         # 1. Extract the actual model
         try:
@@ -174,8 +394,43 @@ def run_external_decision_plots(all_results, validation_performance):
         X_ext = ext_df.copy()
         for col in selected_features:
             if col not in X_ext.columns:
-                X_ext[col] = 0
+                X_ext[col] = np.nan
+
+        X_ext_aligned = X_ext[selected_features].copy()
+        
+        try:
+            booster = model.get_booster()
+            if hasattr(booster, 'feature_types') and booster.feature_types:
+                for col, f_type in zip(selected_features, booster.feature_types):
+                    if f_type == 'c':
+                        X_ext_aligned[col] = X_ext_aligned[col].astype('category')
+                    else:
+                        X_ext_aligned[col] = pd.to_numeric(X_ext_aligned[col], errors='coerce')
+                        # Standardize (Z-score) the external numeric feature
+                        col_mean = X_ext_aligned[col].mean()
+                        col_std = X_ext_aligned[col].std()
+                        if col_std > 0:
+                            X_ext_aligned[col] = (X_ext_aligned[col] - col_mean) / col_std
+        except Exception:
+            for col in selected_features:
+                if X_ext_aligned[col].dtype == 'object' or X_ext_aligned[col].dtype.name == 'string':
+                    X_ext_aligned[col] = X_ext_aligned[col].astype('category')
+                else:
+                    X_ext_aligned[col] = pd.to_numeric(X_ext_aligned[col], errors='coerce')
+
         X_ext_aligned = X_ext[selected_features]
+
+        # 1. Extract the actual model
+        try:
+            model = pipeline.named_steps['model']
+        except (AttributeError, KeyError):
+            model = pipeline
+
+        # --- EXTRACT BASE MODEL FOR SHAP ---
+        if hasattr(model, 'calibrated_classifiers_'):
+            model = model.calibrated_classifiers_[0].estimator
+        else:
+            model = model
 
         # 3. Initialize SHAP Explainer
         explainer = shap.TreeExplainer(model)
@@ -188,8 +443,8 @@ def run_external_decision_plots(all_results, validation_performance):
         if isinstance(base_value, (list, np.ndarray)) and len(base_value) > 1:
             base_value = base_value[1]
 
-        print(f" - Processing {len(X_ext_aligned)} samples for pipeline: {pipeline_name}")
-        
+        print(f" - Processing {len(X_ext_aligned)} samples for pipeline: {pipeline_name} on {dataset_name}")
+
         for i in range(len(X_ext_aligned)):
             # ID Retrieval
             clinical_id_col = config.get('CLINICAL_ID', 'ID')

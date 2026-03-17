@@ -1,0 +1,912 @@
+--- Loading data ---
+Step 1: Loading and preparing data...
+Using Clinical ID: ID, Genomic ID: gen_record_id
+Loading clinical file: data/dataset_Ouyang/pt_data.tsv
+Loading clinical file: data/dataset_Ouyang/rad_data.tsv
+Loading mutation data from: 
+Mutation loading failed: [Errno 2] No such file or directory: ''
+  Applying data types and calculating statistics...
+Data prepared successfully. Predicting 'Label'
+--- Loading complete ---
+--- Training ---
+
+
+==================== RUNNING PIPELINE: Clinical_Model ====================
+--- Active modalities: ['PT'] ---
+--- Feature Selection: ENABLED ---
+  Using 20 features for this pipeline (filtered by modalities).
+--- Step 1: Performing 10-fold nested cross-validation for evaluation ---
+
+--- Fold 1/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8904518004160953, 'gamma': 2.7340437682905776, 'learning_rate': 0.5115649589216125, 'max_depth': 2, 'min_child_weight': 7, 'n_estimators': 52, 'subsample': 0.7436252627269045}), Score: 0.6938
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.275251
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_1/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_1/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 6 ---
+  Training final model on 6 features and evaluating.
+  AUC on test set 0.7656
+
+--- Fold 2/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7660111065385526, 'gamma': 4.088962135834666, 'learning_rate': 0.031543991606617826, 'max_depth': 2, 'min_child_weight': 6, 'n_estimators': 150, 'subsample': 0.6}), Score: 0.6919
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.073144
+  Found 7 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_2/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_2/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 7 ---
+  Training final model on 7 features and evaluating.
+  AUC on test set 0.6354
+
+--- Fold 3/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6, 'gamma': 0.1, 'learning_rate': 0.008199935353913486, 'max_depth': 5, 'min_child_weight': 5, 'n_estimators': 55, 'subsample': 0.6983520506835876}), Score: 0.7113
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.017063
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_3/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_3/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 6 ---
+  Training final model on 6 features and evaluating.
+  AUC on test set 0.5451
+
+--- Fold 4/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7042946454032787, 'gamma': 4.111037328080967, 'learning_rate': 0.2218433348121348, 'max_depth': 2, 'min_child_weight': 5, 'n_estimators': 89, 'subsample': 0.6}), Score: 0.7260
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.172185
+  Found 8 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_4/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_4/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 8 ---
+  Training final model on 8 features and evaluating.
+  AUC on test set 0.5660
+
+--- Fold 5/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6418727228792079, 'gamma': 0.1, 'learning_rate': 0.005417546095683189, 'max_depth': 5, 'min_child_weight': 5, 'n_estimators': 200, 'subsample': 0.7919599705369973}), Score: 0.6730
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.025924
+  Found 7 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_5/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_5/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 7 ---
+  Training final model on 7 features and evaluating.
+  AUC on test set 0.8299
+
+--- Fold 6/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6368188348107072, 'gamma': 3.926660042194339, 'learning_rate': 0.07639285925413168, 'max_depth': 3, 'min_child_weight': 5, 'n_estimators': 113, 'subsample': 1.0}), Score: 0.6914
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.072666
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_6/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_6/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 6 ---
+  Training final model on 6 features and evaluating.
+  AUC on test set 0.8175
+
+--- Fold 7/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7557221351396414, 'gamma': 5.0, 'learning_rate': 0.023267244885189893, 'max_depth': 4, 'min_child_weight': 5, 'n_estimators': 139, 'subsample': 0.9060585001252068}), Score: 0.7094
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.044422
+  Found 7 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_7/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_7/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 7 ---
+  Training final model on 7 features and evaluating.
+  AUC on test set 0.6032
+
+--- Fold 8/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8555408310295827, 'gamma': 5.0, 'learning_rate': 0.018834474748169502, 'max_depth': 5, 'min_child_weight': 5, 'n_estimators': 200, 'subsample': 0.6}), Score: 0.6917
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.082344
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_8/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_8/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 6 ---
+  Training final model on 6 features and evaluating.
+  AUC on test set 0.6750
+
+--- Fold 9/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6, 'gamma': 0.1, 'learning_rate': 0.017766997892951518, 'max_depth': 5, 'min_child_weight': 5, 'n_estimators': 200, 'subsample': 0.9111777233505447}), Score: 0.7089
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.076096
+  Found 8 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_9/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_9/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 8 ---
+  Training final model on 8 features and evaluating.
+  AUC on test set 0.5429
+
+--- Fold 10/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7421549712254327, 'gamma': 5.0, 'learning_rate': 0.2105391801033846, 'max_depth': 5, 'min_child_weight': 9, 'n_estimators': 122, 'subsample': 0.9186905933958072}), Score: 0.7071
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.183925
+  Found 5 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_10/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/OuterFold_10/PT/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 5 ---
+  Training final model on 5 features and evaluating.
+  AUC on test set 0.6411
+
+--- Step 2: Overall evaluation for pipeline Clinical_Model completed. ---
+
+--- Calculating Clinical Utility Metrics for Clinical_Model on CrossValidation ---
+  Optimal Threshold (Youden's J): 0.2309
+  Sensitivity: 0.5244 | Specificity: 0.7746
+  PPV: 0.3496 | NPV: 0.8758
+  Saved predictions to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/CrossValidation_Clinical_Model_predictions.csv
+  Hosmer-Lemeshow Test -> Stat: 9.02, p-value: 0.3402
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_crossvalidation_clinical_model_calibration.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_crossvalidation_clinical_model_calibration.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_crossvalidation_clinical_model_dca.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_crossvalidation_clinical_model_dca.svg
+Mean-fold ROC (AUC = 0.66 [95% CI: 0.58-0.74])
+Global ROC (AUC = 0.66 [95% CI: 0.59-0.73])
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_clinical_model_roc_curve_cross_validation.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_clinical_model_roc_curve_cross_validation.svg
+--- Step 4: Evaluating overall model performance for Clinical_Model from CV ---
+Overall Classification Report (from cross-validation):
+              precision    recall  f1-score   support
+
+           0       0.81      0.99      0.89       355
+           1       0.00      0.00      0.00        82
+
+    accuracy                           0.80       437
+   macro avg       0.41      0.49      0.45       437
+weighted avg       0.66      0.80      0.72       437
+
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_clinical_model_confusion_matrix_cv.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Label_clinical_model_confusion_matrix_cv.svg
+
+--- Step 3: Building Consensus Final Model for Clinical_Model on ALL data ---
+  Consensus Hyperparameters: {'colsample_bytree': np.float64(0.7192867047442498), 'gamma': np.float64(3.0160703274400555), 'learning_rate': np.float64(0.1125370523673789), 'max_depth': 4, 'min_child_weight': 6, 'n_estimators': 132, 'subsample': np.float64(0.7769864100819047)}
+  Found 11 consensus features (selected in >= 0 of 10 folds)
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: ALL ---
+  [Selection] Low dimensionality (11) for ALL. Thresholds set to 0.
+  Found 11 highly stable and important features for ALL.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Final_Model/ALL/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Clinical_Model/Final_Model/ALL/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 11 ---
+
+--- Step 4: Final Feature Set Verification (10-fold CV on entire dataset) ---
+
+--- Calculating Clinical Utility Metrics for Clinical_Model on Final_Verification ---
+  Optimal Threshold (Youden's J): 0.1837
+  Sensitivity: 0.5854 | Specificity: 0.6986
+  PPV: 0.3097 | NPV: 0.8794
+  Saved predictions to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Final_Verification_Clinical_Model_predictions.csv
+  Hosmer-Lemeshow Test -> Stat: 9.61, p-value: 0.2937
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_final_verification_clinical_model_calibration.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_final_verification_clinical_model_calibration.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_final_verification_clinical_model_dca.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_final_verification_clinical_model_dca.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_clinical_model_confusion_matrix_cv.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_clinical_model_confusion_matrix_cv.svg
+  [Saved] Clinical metrics table saved to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Clinical_Model_CV_Metrics.csv
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_final_clinical_model_roc.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_final_clinical_model_roc.svg
+--- Explaining model with SHAP values ---
+Warning: Could not find 'model' step in pipeline: 'CalibratedClassifierCV' object has no attribute 'named_steps'. Assuming pipeline *is* the model.
+ - No 'selector' step found. Using original features.
+ - Explaining model on 11 features.
+Generating SHAP summary plots...
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_shap_clinical_model_shap_summary_bar.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_shap_clinical_model_shap_summary_bar.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_shap_clinical_model_shap_summary_beeswarm.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_shap_clinical_model_shap_summary_beeswarm.svg
+Generating individual SHAP feature plots...
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_age.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_age.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_psize.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_psize.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_scc_ag.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_scc_ag.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_cea.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_cea.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_pack_year.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_pack_year.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_t.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_t.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_pleural_indentation.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_pleural_indentation.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_lobulation.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_lobulation.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_nse.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_nse.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_location.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/individualFeatures/Label_clinical_model_shap_scatter_location.svg
+--- Step 6: Analyzing SHAP Impacts for Important Features ---
+--- Generating Aggregated SHAP Impact Plot ---
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_clinical_model_aggregated_shap_impact.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Clinical_Model/Label_clinical_model_aggregated_shap_impact.svg
+--- SHAP Impact Plot Saved ---
+
+
+==================== RUNNING PIPELINE: Radiomic_Model ====================
+--- Active modalities: ['RAD'] ---
+--- Feature Selection: ENABLED ---
+  Using 128 features for this pipeline (filtered by modalities).
+--- Step 1: Performing 10-fold nested cross-validation for evaluation ---
+
+--- Fold 1/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7033486647890992, 'gamma': 4.896627926289172, 'learning_rate': 0.5312697900208316, 'max_depth': 4, 'min_child_weight': 9, 'n_estimators': 74, 'subsample': 0.9090898938531459}), Score: 0.8082
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.190384
+  Found 4 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_1/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_1/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 4 ---
+  Training final model on 4 features and evaluating.
+  AUC on test set 0.7708
+
+--- Fold 2/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.85006920031942, 'gamma': 4.35134357998783, 'learning_rate': 0.001, 'max_depth': 3, 'min_child_weight': 6, 'n_estimators': 50, 'subsample': 0.7506642843067391}), Score: 0.7982
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.000882
+  Found 11 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_2/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_2/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 11 ---
+  Training final model on 11 features and evaluating.
+  AUC on test set 0.7778
+
+--- Fold 3/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7386569453022824, 'gamma': 2.7109226863117653, 'learning_rate': 0.07611244996142014, 'max_depth': 2, 'min_child_weight': 19, 'n_estimators': 155, 'subsample': 0.7843064740162514}), Score: 0.8028
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.052524
+  Found 22 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_3/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_3/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 22 ---
+  Training final model on 22 features and evaluating.
+  AUC on test set 0.6649
+
+--- Fold 4/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8059139183115483, 'gamma': 0.1, 'learning_rate': 0.0012915593193720386, 'max_depth': 2, 'min_child_weight': 10, 'n_estimators': 85, 'subsample': 0.6}), Score: 0.7825
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.002080
+  Found 15 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_4/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_4/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 15 ---
+  Training final model on 15 features and evaluating.
+  AUC on test set 0.8125
+
+--- Fold 5/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6, 'gamma': 2.1585119210633006, 'learning_rate': 0.007545647046216382, 'max_depth': 4, 'min_child_weight': 15, 'n_estimators': 200, 'subsample': 0.7483782915645907}), Score: 0.7710
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.008063
+  Found 32 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_5/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_5/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 32 ---
+  Training final model on 32 features and evaluating.
+  AUC on test set 0.8854
+
+--- Fold 6/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.9082600100230632, 'gamma': 0.1, 'learning_rate': 0.0010743548502016324, 'max_depth': 4, 'min_child_weight': 12, 'n_estimators': 92, 'subsample': 0.678988388716887}), Score: 0.7873
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.000805
+  Found 23 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_6/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_6/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 23 ---
+  Training final model on 23 features and evaluating.
+  AUC on test set 0.7762
+
+--- Fold 7/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8572690666841092, 'gamma': 3.6274719729617284, 'learning_rate': 0.018394004868186115, 'max_depth': 2, 'min_child_weight': 8, 'n_estimators': 134, 'subsample': 0.6}), Score: 0.7748
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.020457
+  Found 17 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_7/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_7/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 17 ---
+  Training final model on 17 features and evaluating.
+  AUC on test set 0.8063
+
+--- Fold 8/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.9191051166159936, 'gamma': 5.0, 'learning_rate': 0.018791583715466617, 'max_depth': 4, 'min_child_weight': 13, 'n_estimators': 50, 'subsample': 0.8645002741103329}), Score: 0.7957
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.013330
+  Found 9 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_8/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_8/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 9 ---
+  Training final model on 9 features and evaluating.
+  AUC on test set 0.7143
+
+--- Fold 9/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8114766968301803, 'gamma': 0.3836994340982982, 'learning_rate': 0.010637763908757623, 'max_depth': 3, 'min_child_weight': 9, 'n_estimators': 101, 'subsample': 0.8568298442482445}), Score: 0.8049
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.008608
+  Found 19 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_9/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_9/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 19 ---
+  Training final model on 19 features and evaluating.
+  AUC on test set 0.6500
+
+--- Fold 10/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8935251218100924, 'gamma': 3.033998544179123, 'learning_rate': 0.00950616073537366, 'max_depth': 2, 'min_child_weight': 9, 'n_estimators': 172, 'subsample': 0.6}), Score: 0.8012
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.012716
+  Found 25 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_10/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/OuterFold_10/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 25 ---
+  Training final model on 25 features and evaluating.
+  AUC on test set 0.7500
+
+--- Step 2: Overall evaluation for pipeline Radiomic_Model completed. ---
+
+--- Calculating Clinical Utility Metrics for Radiomic_Model on CrossValidation ---
+  Optimal Threshold (Youden's J): 0.1502
+  Sensitivity: 0.7561 | Specificity: 0.6451
+  PPV: 0.3298 | NPV: 0.9197
+  Saved predictions to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/CrossValidation_Radiomic_Model_predictions.csv
+  Hosmer-Lemeshow Test -> Stat: 10.73, p-value: 0.2177
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_crossvalidation_radiomic_model_calibration.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_crossvalidation_radiomic_model_calibration.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_crossvalidation_radiomic_model_dca.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_crossvalidation_radiomic_model_dca.svg
+Mean-fold ROC (AUC = 0.76 [95% CI: 0.71-0.81])
+Global ROC (AUC = 0.74 [95% CI: 0.68-0.79])
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_radiomic_model_roc_curve_cross_validation.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_radiomic_model_roc_curve_cross_validation.svg
+--- Step 4: Evaluating overall model performance for Radiomic_Model from CV ---
+Overall Classification Report (from cross-validation):
+              precision    recall  f1-score   support
+
+           0       0.83      0.95      0.89       355
+           1       0.42      0.17      0.24        82
+
+    accuracy                           0.80       437
+   macro avg       0.63      0.56      0.56       437
+weighted avg       0.76      0.80      0.76       437
+
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_radiomic_model_confusion_matrix_cv.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Label_radiomic_model_confusion_matrix_cv.svg
+
+--- Step 3: Building Consensus Final Model for Radiomic_Model on ALL data ---
+  Consensus Hyperparameters: {'colsample_bytree': np.float64(0.8087624740685788), 'gamma': np.float64(2.6362576064891217), 'learning_rate': np.float64(0.06756233144258258), 'max_depth': 3, 'min_child_weight': 11, 'n_estimators': 111, 'subsample': np.float64(0.7392757450816191)}
+  Found 51 consensus features (selected in >= 0 of 10 folds)
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: ALL ---
+  [Selection] High dimensionality for ALL. Mean Thresh: 0.078123
+  Found 18 highly stable and important features for ALL.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Final_Model/ALL/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Radiomic_Model/Final_Model/ALL/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 18 ---
+
+--- Step 4: Final Feature Set Verification (10-fold CV on entire dataset) ---
+
+--- Calculating Clinical Utility Metrics for Radiomic_Model on Final_Verification ---
+  Optimal Threshold (Youden's J): 0.1376
+  Sensitivity: 0.8415 | Specificity: 0.6310
+  PPV: 0.3450 | NPV: 0.9451
+  Saved predictions to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Final_Verification_Radiomic_Model_predictions.csv
+  Hosmer-Lemeshow Test -> Stat: 12.93, p-value: 0.1143
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_final_verification_radiomic_model_calibration.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_final_verification_radiomic_model_calibration.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_final_verification_radiomic_model_dca.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_final_verification_radiomic_model_dca.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_radiomic_model_confusion_matrix_cv.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_radiomic_model_confusion_matrix_cv.svg
+  [Saved] Clinical metrics table saved to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Radiomic_Model_CV_Metrics.csv
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_final_radiomic_model_roc.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_final_radiomic_model_roc.svg
+--- Explaining model with SHAP values ---
+Warning: Could not find 'model' step in pipeline: 'CalibratedClassifierCV' object has no attribute 'named_steps'. Assuming pipeline *is* the model.
+ - No 'selector' step found. Using original features.
+ - Explaining model on 18 features.
+Generating SHAP summary plots...
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_shap_radiomic_model_shap_summary_bar.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_shap_radiomic_model_shap_summary_bar.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_shap_radiomic_model_shap_summary_beeswarm.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_shap_radiomic_model_shap_summary_beeswarm.svg
+Generating individual SHAP feature plots...
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_lgze.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_lgze.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_sze.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_sze.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_huq3.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_huq3.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_humax.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_humax.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_shape_sphericity(onlyfor3droi)).pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_shape_sphericity(onlyfor3droi)).pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_shape_sphericity(onlyfor3droi)).ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_shape_sphericity(onlyfor3droi)).ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glrlm_srhge.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glrlm_srhge.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glcm_correlation.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glcm_correlation.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_humin.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_humin.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glrlm_lrhge.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glrlm_lrhge.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_suvbwq1.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_conventional_suvbwq1.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_zp.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_zp.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_lzlge.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_lzlge.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glcm_contrast(=variance).pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glcm_contrast(=variance).pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_szhge.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_szhge.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_sze.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glzlm_sze.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glcm_energy(=angularsecondmoment).ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/individualFeatures/Label_radiomic_model_shap_scatter_glcm_energy(=angularsecondmoment).ct.svg
+--- Step 6: Analyzing SHAP Impacts for Important Features ---
+--- Generating Aggregated SHAP Impact Plot ---
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_radiomic_model_aggregated_shap_impact.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Radiomic_Model/Label_radiomic_model_aggregated_shap_impact.svg
+--- SHAP Impact Plot Saved ---
+
+
+==================== RUNNING PIPELINE: Combined_Model ====================
+--- Active modalities: ['PT', 'RAD'] ---
+--- Feature Selection: ENABLED ---
+  Using 148 features for this pipeline (filtered by modalities).
+--- Step 1: Performing 10-fold nested cross-validation for evaluation ---
+
+--- Fold 1/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 1.0, 'gamma': 0.1, 'learning_rate': 0.0033965482967186897, 'max_depth': 5, 'min_child_weight': 6, 'n_estimators': 177, 'subsample': 0.7445801657562523}), Score: 0.8102
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.019910
+  Found 5 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_1/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_1/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.003751
+  Found 29 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_1/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_1/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 34 ---
+  Training final model on 34 features and evaluating.
+  AUC on test set 0.7431
+
+--- Fold 2/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6, 'gamma': 0.1, 'learning_rate': 0.001, 'max_depth': 5, 'min_child_weight': 5, 'n_estimators': 50, 'subsample': 1.0}), Score: 0.8173
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.002116
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_2/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_2/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.000575
+  Found 12 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_2/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_2/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 18 ---
+  Training final model on 18 features and evaluating.
+  AUC on test set 0.7639
+
+--- Fold 3/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7136788669102407, 'gamma': 1.482499900630377, 'learning_rate': 0.018220514238275785, 'max_depth': 5, 'min_child_weight': 6, 'n_estimators': 117, 'subsample': 0.6}), Score: 0.7933
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.058174
+  Found 7 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_3/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_3/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.014948
+  Found 30 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_3/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_3/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 37 ---
+  Training final model on 37 features and evaluating.
+  AUC on test set 0.6736
+
+--- Fold 4/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 1.0, 'gamma': 5.0, 'learning_rate': 0.001, 'max_depth': 3, 'min_child_weight': 12, 'n_estimators': 200, 'subsample': 0.663752010666291}), Score: 0.7820
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.005510
+  Found 5 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_4/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_4/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.001515
+  Found 20 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_4/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_4/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 25 ---
+  Training final model on 25 features and evaluating.
+  AUC on test set 0.8472
+
+--- Fold 5/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6858705189102313, 'gamma': 1.5639133341083111, 'learning_rate': 0.08814812261826506, 'max_depth': 3, 'min_child_weight': 15, 'n_estimators': 144, 'subsample': 0.6}), Score: 0.7715
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.151239
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_5/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_5/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.057565
+  Found 26 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_5/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_5/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 32 ---
+  Training final model on 32 features and evaluating.
+  AUC on test set 0.8715
+
+--- Fold 6/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7006457226683429, 'gamma': 3.6150371692711833, 'learning_rate': 0.00849602619754387, 'max_depth': 2, 'min_child_weight': 14, 'n_estimators': 200, 'subsample': 0.8284229687644609}), Score: 0.7815
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.021384
+  Found 5 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_6/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_6/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.012875
+  Found 18 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_6/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_6/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 23 ---
+  Training final model on 23 features and evaluating.
+  AUC on test set 0.7905
+
+--- Fold 7/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.7916194874082079, 'gamma': 5.0, 'learning_rate': 0.024699587523645015, 'max_depth': 2, 'min_child_weight': 6, 'n_estimators': 200, 'subsample': 0.6}), Score: 0.7869
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.089195
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_7/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_7/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.026508
+  Found 20 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_7/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_7/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 26 ---
+  Training final model on 26 features and evaluating.
+  AUC on test set 0.8127
+
+--- Fold 8/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8254917053940666, 'gamma': 0.1, 'learning_rate': 0.013743509697498164, 'max_depth': 2, 'min_child_weight': 5, 'n_estimators': 161, 'subsample': 0.6}), Score: 0.8006
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.039135
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_8/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_8/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.011948
+  Found 21 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_8/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_8/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 27 ---
+  Training final model on 27 features and evaluating.
+  AUC on test set 0.7500
+
+--- Fold 9/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.6974274903934614, 'gamma': 3.9993069239596633, 'learning_rate': 0.07075723839376641, 'max_depth': 3, 'min_child_weight': 7, 'n_estimators': 86, 'subsample': 0.6860917366228305}), Score: 0.8037
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.102343
+  Found 7 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_9/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_9/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.039343
+  Found 22 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_9/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_9/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 29 ---
+  Training final model on 29 features and evaluating.
+  AUC on test set 0.6536
+
+--- Fold 10/10 ---
+  Starting hyperparameter search...
+  Best params found: OrderedDict({'colsample_bytree': 0.8114766968301803, 'gamma': 0.3836994340982982, 'learning_rate': 0.010637763908757623, 'max_depth': 3, 'min_child_weight': 9, 'n_estimators': 101, 'subsample': 0.8568298442482445}), Score: 0.8001
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: PT ---
+  [Selection] High dimensionality for PT. Mean Thresh: 0.042777
+  Found 6 highly stable and important features for PT.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_10/PT/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_10/PT/feature_selection_plot.png
+--- Selecting features for modality: RAD ---
+  [Selection] High dimensionality for RAD. Mean Thresh: 0.008538
+  Found 18 highly stable and important features for RAD.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_10/RAD/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/OuterFold_10/RAD/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 24 ---
+  Training final model on 24 features and evaluating.
+  AUC on test set 0.7679
+
+--- Step 2: Overall evaluation for pipeline Combined_Model completed. ---
+
+--- Calculating Clinical Utility Metrics for Combined_Model on CrossValidation ---
+  Optimal Threshold (Youden's J): 0.1332
+  Sensitivity: 0.8415 | Specificity: 0.5915
+  PPV: 0.3224 | NPV: 0.9417
+  Saved predictions to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/CrossValidation_Combined_Model_predictions.csv
+  Hosmer-Lemeshow Test -> Stat: 21.19, p-value: 0.0067
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_crossvalidation_combined_model_calibration.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_crossvalidation_combined_model_calibration.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_crossvalidation_combined_model_dca.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_crossvalidation_combined_model_dca.svg
+Mean-fold ROC (AUC = 0.77 [95% CI: 0.72-0.82])
+Global ROC (AUC = 0.75 [95% CI: 0.69-0.80])
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_combined_model_roc_curve_cross_validation.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_combined_model_roc_curve_cross_validation.svg
+--- Step 4: Evaluating overall model performance for Combined_Model from CV ---
+Overall Classification Report (from cross-validation):
+              precision    recall  f1-score   support
+
+           0       0.83      0.95      0.89       355
+           1       0.48      0.18      0.27        82
+
+    accuracy                           0.81       437
+   macro avg       0.66      0.57      0.58       437
+weighted avg       0.77      0.81      0.77       437
+
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_combined_model_confusion_matrix_cv.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Label_combined_model_confusion_matrix_cv.svg
+
+--- Step 3: Building Consensus Final Model for Combined_Model on ALL data ---
+  Consensus Hyperparameters: {'colsample_bytree': np.float64(0.7826210488514731), 'gamma': np.float64(2.1344456762067834), 'learning_rate': np.float64(0.024009931087447058), 'max_depth': 3, 'min_child_weight': 8, 'n_estimators': 144, 'subsample': np.float64(0.717967672605808)}
+  Found 65 consensus features (selected in >= 0 of 10 folds)
+--- Starting Stable Feature Selection (10-fold CV per modality) ---
+--- Selecting features for modality: ALL ---
+  [Selection] High dimensionality for ALL. Mean Thresh: 0.032118
+  Found 21 highly stable and important features for ALL.
+  [Exploration] Saved global feature selection summary to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Final_Model/ALL/feature_selection_summary.csv
+  [Exploration] Saved global feature selection plot to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/cross_validation/Combined_Model/Final_Model/ALL/feature_selection_plot.png
+
+--- Total unique stable features from all modalities: 21 ---
+
+--- Step 4: Final Feature Set Verification (10-fold CV on entire dataset) ---
+
+--- Calculating Clinical Utility Metrics for Combined_Model on Final_Verification ---
+  Optimal Threshold (Youden's J): 0.1935
+  Sensitivity: 0.7561 | Specificity: 0.7155
+  PPV: 0.3804 | NPV: 0.9270
+  Saved predictions to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Final_Verification_Combined_Model_predictions.csv
+  Hosmer-Lemeshow Test -> Stat: 8.83, p-value: 0.3570
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_final_verification_combined_model_calibration.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_final_verification_combined_model_calibration.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_final_verification_combined_model_dca.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_final_verification_combined_model_dca.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_combined_model_confusion_matrix_cv.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_combined_model_confusion_matrix_cv.svg
+  [Saved] Clinical metrics table saved to results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Combined_Model_CV_Metrics.csv
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_final_combined_model_roc.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_final_combined_model_roc.svg
+--- Explaining model with SHAP values ---
+Warning: Could not find 'model' step in pipeline: 'CalibratedClassifierCV' object has no attribute 'named_steps'. Assuming pipeline *is* the model.
+ - No 'selector' step found. Using original features.
+ - Explaining model on 21 features.
+Generating SHAP summary plots...
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_shap_combined_model_shap_summary_bar.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_shap_combined_model_shap_summary_bar.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_shap_combined_model_shap_summary_beeswarm.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_shap_combined_model_shap_summary_beeswarm.svg
+Generating individual SHAP feature plots...
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_lgze.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_lgze.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_sze.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_sze.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_age.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_age.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_humax.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_humax.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_huq3.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_huq3.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_scc_ag.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_scc_ag.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glrlm_lrhge.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glrlm_lrhge.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glcm_correlation.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glcm_correlation.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glrlm_srhge.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glrlm_srhge.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_lzlge.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_lzlge.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_humin.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_humin.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_cea.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_cea.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_shape_sphericity(onlyfor3droi)).ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_shape_sphericity(onlyfor3droi)).ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_shape_sphericity(onlyfor3droi)).pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_shape_sphericity(onlyfor3droi)).pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_suvbwmin.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_suvbwmin.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_hgze.ct.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_hgze.ct.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_zlnu.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_zlnu.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glcm_contrast(=variance).pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glcm_contrast(=variance).pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_szhge.pet.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_glzlm_szhge.pet.svg
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_suvbwq1.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/individualFeatures/Label_combined_model_shap_scatter_conventional_suvbwq1.svg
+--- Step 6: Analyzing SHAP Impacts for Important Features ---
+--- Generating Aggregated SHAP Impact Plot ---
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_combined_model_aggregated_shap_impact.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Combined_Model/Label_combined_model_aggregated_shap_impact.svg
+--- SHAP Impact Plot Saved ---
+
+--- Generating Final Pipeline Comparison Plot ---
+Saved plots: 
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Label_pipeline_comparison_roc.png
+ - results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/models/Label_pipeline_comparison_roc.svg
+--- Training complete ---
+--- Saving the models ---
+Successfully saved complete bundle to: results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/saved_models/Clinical_Model_bundle.joblib
+Successfully saved complete bundle to: results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/saved_models/Radiomic_Model_bundle.joblib
+Successfully saved complete bundle to: results_Ouyang_paper/AnalysisOf.Label_Class.1_Model.xgboost/saved_models/Combined_Model_bundle.joblib
+Saved training context for later validation.

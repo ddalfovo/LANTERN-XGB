@@ -1,0 +1,2 @@
+Dataset,Pipeline,Accuracy,Accuracy_95CI,Sensitivity (TPR),Sensitivity_95CI,Specificity (TNR),Specificity_95CI
+external,Radiomic_Model,0.71,[0.630-0.800],0.7272727272727273,[0.542-0.909],0.7051282051282052,[0.611-0.810]

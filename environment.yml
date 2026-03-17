@@ -15,3 +15,4 @@ dependencies:
   - pyyaml=6.0.3
   - pip:
     - neuroCombat==0.2.12
+    - fpdf==1.7.2

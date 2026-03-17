@@ -63,8 +63,14 @@ def load_and_prepare_data(mutation_path, target_column, positive_class, analysis
         print(f"Loading clinical file: {file_path}")
         try:
             df = pd.read_csv(file_path, sep='\t')
-            # Sanitize column names: replace special characters with underscores
-            # df.columns = [re.sub(r'[\[\]<>()\s,]', '_', col) for col in df.columns]
+
+            # --- NEW FIX: Prevent column overlap across modalities ---
+            if clinical_df is not None:
+                # Identify columns that already exist in the master dataframe
+                overlapping_cols = [c for c in df.columns if c in clinical_df.columns and c not in [clinical_id, genomic_id, target_column]]
+                if overlapping_cols:
+                    print(f"  [Fix] Dropping overlapping columns from {file_name} to prevent modality leakage: {overlapping_cols}")
+                    df = df.drop(columns=overlapping_cols)
 
             # Track features associated with this specific modality
             new_features = [c for c in df.columns if c not in [clinical_id, genomic_id, target_column]]
@@ -265,15 +271,36 @@ def load_and_prepare_data(mutation_path, target_column, positive_class, analysis
                 type_lookup[name] = row['type']
 
     print("  Applying data types and calculating statistics...")
+    harmonized_modalities = []
+    for pipe in config.get('PIPELINES', []):
+        harm_rule = pipe.get('harmonization', [])
+        if isinstance(harm_rule, list):
+            harmonized_modalities.extend([m.lower() for m in harm_rule])
+        elif harm_rule is True: # Fallback if set to True instead of a list
+            harmonized_modalities.extend([m.lower() for m in pipe.get('modalities', [])])
+
+    # Map features to their specific modality for easy lookup
+    # 'modality_features' is the dict created in Step 1 of load_and_prepare_data
+    harmonized_feature_set = set()
+    for mod in set(harmonized_modalities):
+        if mod in modality_features:
+            harmonized_feature_set.update(modality_features[mod])
+    
     for col in X.columns:
         dtype = type_lookup.get(col)
 
         if dtype == 'numeric':
-            X[col] = pd.to_numeric(X[col], errors='coerce')
+            X[col] = pd.to_numeric(X[col], errors='coerce').astype(float)
+            # Calculate stats
+            col_mean = X[col].mean()
+            col_std = X[col].std()
+            
             numerical_mappings[col] = {
-                'mean': X[col].mean(), 
-                'std': X[col].std()
+                'mean': col_mean, 
+                'std': col_std
             }
+            if col_std > 0 and col in harmonized_feature_set:
+                X[col] = (X[col] - col_mean) / col_std
         elif dtype in ['factor', 'bin']:
             X[col] = X[col].astype('category')
             categorical_mappings[col] = X[col].cat.categories.tolist()

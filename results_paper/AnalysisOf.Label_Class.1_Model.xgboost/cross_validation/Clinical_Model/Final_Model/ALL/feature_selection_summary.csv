@@ -1,0 +1,12 @@
+feature,Selection_Count,Avg_Importance
+Age,10,0.458712
+CEA,10,0.4334751
+Psize,10,0.37546328
+T,10,0.35709053
+SCC_Ag,10,0.34401327
+NSE,10,0.22010522
+Location,10,0.15546247
+Lobulation,10,0.14047049
+Pleural_indentation,10,0.13563345
+pack_year,10,0.11717689
+CT_morphology,10,0.09893236

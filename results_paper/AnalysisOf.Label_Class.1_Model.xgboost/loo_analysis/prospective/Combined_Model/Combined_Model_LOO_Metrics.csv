@@ -1,0 +1,2 @@
+Dataset,Pipeline,Accuracy,Accuracy_95CI,Sensitivity (TPR),Sensitivity_95CI,Specificity (TNR),Specificity_95CI
+prospective,Combined_Model,0.73,[0.640-0.810],0.7391304347826086,[0.538-0.913],0.7272727272727273,[0.623-0.818]

@@ -63,11 +63,15 @@ PIPELINES:
     modalities:
       - RAD
     feature_selection: True
+    harmonization:
+      - RAD
   - name: Combined_Model
     modalities:
       - PT
       - RAD
     feature_selection: True
+    harmonization:
+      - RAD
 
 # ==========================================
 # 5. VALIDATION & REPRODUCIBILITY
@@ -86,12 +90,17 @@ MISSING_THRESHOLD: 0.50
 # ==========================================
 # Data for testing the final model on entirely separate cohorts
 EXTERNAL_VALIDATION:
-  - name: "external1"
-    path: "./data/dataset_Ouyang/external1.tsv"
-    label_col: "Label"
-  - name: "external2"
+  - name: "prospective"
     path: "./data/dataset_Ouyang/external2.tsv"
     label_col: "Label"
+  - name: "external"
+    path: "./data/dataset_Ouyang/external1.tsv"
+    label_col: "Label"
+
+LOO_ANALYSIS_MODEL: "Combined_Model"
+
+ICE_PLOTS: True
+ICE_FEATS_N: 5
 
 # ==========================================
 # 7. MODEL TUNING & SELECTION
@@ -115,6 +124,8 @@ N_TOP_FEATURES: 20 # Number of top features to display in plots.
 
 RUN_DECISION_PLOTS: False
 
+N_CPU: -1
+
 # ==========================================
 # 8. FILES
 # ==========================================
@@ -129,7 +140,7 @@ CLINICAL_FILES:
 MUTATION_FILE_PATH: ''
 # Output folder
 
-BASE_DIR: './results_Ouyang'
+BASE_DIR: './results_Ouyang_ncpu1'
 # Add suffix to folder results
 
 ADD_SUFF: ''

@@ -58,7 +58,7 @@ def save_model_package(all_results, class_names, RESULTS_DIR):
         # --- FILE SERIALIZATION ---
         # Save as a .joblib file. Joblib is preferred over Pickle for models 
         # containing large NumPy arrays (typical for ML models).
-        filename = save_path / f"{pipeline_name}_bundle_{timestamp}.joblib"
+        filename = save_path / f"{pipeline_name}_bundle.joblib"
         
         try:
             joblib.dump(bundle, filename)
