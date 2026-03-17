@@ -21,16 +21,15 @@ To set up the environment for this project, you will need to have Conda installe
 
 ```bash
 # Create the conda environment
-conda env create -f environment.yml
+conda env create -n lantern-xgb -f environment.yml
 
 # Activate the environment
 conda activate lantern-xgb
 ```
-*Note: The `environment.yml` file is not yet created. You will need to create it with the necessary dependencies (e.g., pandas, scikit-learn, xgboost, shap, pyyaml, matplotlib, seaborn, lifelines, skopt, imbalanced-learn).*
 
 ## Usage
 
-The main entry point for the pipeline is `main.py`. The entire workflow is controlled by the `scripts/config.yml` file.
+The main entry point for the pipeline is `training.py`. The entire workflow is controlled by the `scripts/config.yml` file.
 
 ### 1. Configure the Analysis
 
@@ -55,10 +54,14 @@ Before running the pipeline, edit `scripts/config.yml` to define your analysis. 
 
 ### 2. Run the Pipeline
 
-Once the configuration is set, run the main script from the root directory of the project:
+The workflow is split into three main execution scripts depending on what stage of analysis you are in:
+
+## Step A: Model Training & Internal Validation
+
+Run this script to train your models, perform stable feature selection, optimize hyperparameters, and perform internal cross-validation.
 
 ```bash
-python main.py
+python training.py
 ```
 
 The script will execute the following steps:
@@ -68,25 +71,50 @@ The script will execute the following steps:
     - Tune hyperparameters using Bayesian optimization.
     - Select stable features.
     - Train a final consensus model.
-3.  Save the trained models, evaluation plots (like ROC curves), and performance metrics to the `results/` directory (or the directory specified in `BASE_DIR` in the config).
-4.  Run external validation if configured.
+Outputs: Saved model bundles (.joblib), internal CV ROC/DCA curves, global SHAP summary plots, and feature selection matrices.
+
+## Step B: External Cohort Validation
+Run this script to test your trained models on independent external datasets (defined under EXTERNAL_VALIDATION in the config).
+
+```bash
+python validation.py
+```
+
+Outputs: Evaluates standard (Z-scored) and ComBat-harmonized data, generating baseline vs. harmonized performance metrics, confusion matrices, and comparison ROC curves.
+
+## Step C: Leave-One-Out (LOO) & Clinical Reports
+
+Run this script specifically for micro-cohorts (e.g., n=20 Radiogenomic cohorts). It safely standardizes small datasets, calculates individualized SHAP trajectories, and generates the PDF reports.
+
+```bash
+python loo.py
+```
+
+Outputs: Patient-specific LOO predictions, order-independent SHAP decision plots, comprehensive LOO ROC comparison plots, and individual Clinical Risk Assessment PDFs located in the reports/ subfolders.
+
 
 ## Project Structure
 
 ```
-├── main.py                # Main script to run the pipeline
+LANTERN-XGB/
+├── training.py            # Core script for CV, feature selection, and model building
+├── validation.py          # Script for large-scale external cohort evaluation
+├── validation_loo.py      # Script for Leave-One-Out analysis & PDF report generation
+├── environment.yml        # Conda environment dependency file
 ├── README.md              # This file
-├── data/                  # Directory for datasets
-│   └── dataset_Ouyang/
+├── data/                  # Directory containing raw clinical and genomic datasets
+│   └── dataset_Ouyang/    
 ├── scripts/
-│   ├── config.yml         # Main configuration file for the project
-│   └── lib/               # Python modules for the pipeline
-│       ├── loadData.py        # Handles data loading and preprocessing
-│       ├── train.py           # Core training and evaluation logic
-│       ├── externalValidation.py # External validation logic
-│       ├── saveModels.py      # Saves trained models
-│       ├── savePlots.py       # Saves evaluation plots
-│       ├── shap.py            # SHAP value computation
-│       └── paths.py           # Defines output paths
-└── results/                 # Output directory for models, plots, and metrics
+│   ├── config.yml         # Main configuration file
+│   └── lib/               # Underlying pipeline modules
+│       ├── loadData.py               # Data merging, cleaning, and strict type-casting
+│       ├── train.py                  # Core training and cross-validation logic
+│       ├── externalValidation.py     # External validation and ComBat logic
+│       ├── clinical_report_generator.py # FPDF biological narrative builder
+│       ├── clinical_metrics.py       # Calibration, DCA, and Bootstrapping utilities
+│       ├── shap.py                   # Global SHAP plot generation
+│       ├── paths.py                  # Directory path management
+│       ├── saveModels.py             # Model bundle saving
+│       └── savePlots.py              # Visualization formatting and saving
+└── results/               # Auto-generated output directory for models, plots, and CSVs
 ```
