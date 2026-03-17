@@ -118,3 +118,5 @@ LANTERN-XGB/
 │       └── savePlots.py              # Visualization formatting and saving
 └── results/               # Auto-generated output directory for models, plots, and CSVs
 ```
+
+### Cite:
