@@ -87,7 +87,7 @@ Outputs: Evaluates standard (Z-scored) and ComBat-harmonized data, generating ba
 Run this script specifically for micro-cohorts (e.g., n=20 Radiogenomic cohorts). It safely standardizes small datasets, calculates individualized SHAP trajectories, and generates the PDF reports.
 
 ```bash
-python loo.py
+python validation_loo.py
 ```
 
 Outputs: Patient-specific LOO predictions, order-independent SHAP decision plots, comprehensive LOO ROC comparison plots, and individual Clinical Risk Assessment PDFs located in the reports/ subfolders.
