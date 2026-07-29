@@ -119,4 +119,7 @@ LANTERN-XGB/
 └── results/               # Auto-generated output directory for models, plots, and CSVs
 ```
 
-### Cite:
+### Citation
+If you use this workflow in a paper, please cite:
+
+Dalfovo, D.; Sassorossi, C.; De Paolis, E.; Campanella, A.; Nachira, D.; Petracca Ciavarella, L.; Boldrini, L.; Troost, E.G.C.; Ádány, R.; Farré, N.; et al. LANTERN-XGB: An Interpretable Multi-Modal Machine Learning for Improving Clinical Decision-Making in Lung Cancer. Int. J. Mol. Sci. 2026, 27, 3128. https://doi.org/10.3390/ijms27073128
