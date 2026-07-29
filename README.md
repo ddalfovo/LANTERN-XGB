@@ -1,4 +1,4 @@
-# LANTERN-XGB: A Machine Learning Pipeline for Clinical and Genomic Data
+# LANTERN-XGB: An Interpretable Multi-Modal Machine Learning for Improving Clinical Decision-Making 
 
 LANTERN-XGB is a machine learning pipeline designed for building and evaluating predictive models using XGBoost. It is tailored for integrating clinical and genomic data from multiple modalities to perform binary classification, multiclass classification, and survival analysis. The pipeline includes features for stable feature selection, hyperparameter optimization, and comprehensive model evaluation.
 
